@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的
+例如namespace="me.gacl.mapping.userMapper"就是me.gacl.mapping(包名)+userMapper(userMapper.xml文件去除后缀)
+namespace是该xml对应的接口全名，select和update中的id对应方法名，resultType是返回值类型，parameterType是参数类型（这个其实可选），
+最后#{...}中填写的是方法的参数，-->
+
+
+<mapper namespace="com.xlauncher.dao.AlertEventDao">
+
+    <!-- 添加事件信息 keyProperty="eventId" 表示将自增长后的Id赋值给实体类中的eventId字段
+     useGeneratedKeys="true" 设置是否使用JDBC的getGenereatedKeys方法获取主键并赋值到keyProperty设置的领域模型属性中-->
+    <insert id="addEvent" useGeneratedKeys="true" keyProperty="eventId" parameterType="com.xlauncher.entity.AlertEvent">
+        INSERT INTO es_alert_event(event_starttime,channel_id,type_id,event_source)
+        VALUES(#{eventStartTime},#{channelId},#{typeId},#{eventSource})
+    </insert>
+
+    <!-- 更新事件信息的推送状态-->
+    <update id="updateEventPushStatus" parameterType="com.xlauncher.entity.AlertEvent">
+        UPDATE es_alert_event
+        SET event_push_status=#{eventPushStatus}
+        WHERE event_id=#{eventId}
+    </update>
+
+    <!-- 更新告警事件推送正阳科技的状态，并写入返回的正阳科技的告警事件的编号 -->
+    <update id="updateEventPushSuntecStatus" parameterType="com.xlauncher.entity.AlertEvent" >
+        UPDATE es_alert_event
+        SET event_push_suntec_status=#{eventPushSuntecStatus},order_id=#{orderId}
+        WHERE es_alert_event.event_id=#{eventId}
+    </update>
+
+    <!-- 查询所有事件信息-->
+    <select id="getAllEvents" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_status
+        FROM
+        es_alert_event ,
+        es_event_type
+        WHERE es_alert_event.type_id=es_event_type.type_id
+    </select>
+
+    <!-- 查询告警事件总条数 -->
+    <select id="getEventsCount" resultType="int">
+        SELECT COUNT(*) FROM es_alert_event
+    </select>
+
+    <!-- 按页码page查询所有事件信息，每页count条数据 -->
+    <select id="getAllEventsByPage" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_status
+        FROM
+        es_alert_event ,
+        es_event_type
+        WHERE es_alert_event.type_id=es_event_type.type_id limit #{arg0},#{arg1}
+    </select>
+
+    <!-- 按通道号channelId和指定页码page查询所有事件信息，每页根据传输的count确定数据条数 -->
+    <select id="getAllEventsByChannelIdAndPage" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_status
+        FROM
+        es_alert_event ,
+        es_event_type
+        WHERE es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.channel_id=#{arg0} limit #{arg1},#{arg2}
+    </select>
+
+    <!-- 查询指定channelId告警事件总条数 -->
+    <select id="getEventsCountByChannelId" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM es_alert_event WHERE es_alert_event.channel_id=#{channelId}
+    </select>
+
+    <!--根据channel_id查询-->
+    <select id="getEventBychannelId" parameterType="String" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_status
+        FROM
+        es_alert_event ,
+        es_event_type
+        WHERE es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.channel_id=#{channelId}
+    </select>
+
+    <!--根据id查询 -->
+    <select id="getEventByEventId"  parameterType="int" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.type_id,
+        es_alert_event.event_starttime,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source
+        FROM
+        es_alert_event ,
+        es_event_type
+        WHERE
+        es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.event_id=#{eventId}
+    </select>
+
+    <!--查询所有未推送的告警事件-->
+    <select id="getPushEventsRest" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source
+        FROM
+        es_alert_event,
+        es_event_type
+        WHERE
+        es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.event_push_status="未推送"
+    </select>
+
+    <!-- 查询所有未推送给正阳科技的告警事件，推送状态为推送失败的告警事件 -->
+    <select id="getPushSuntecEventsRest" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_suntec_status
+        FROM
+        es_alert_event,
+        es_event_type
+        WHERE
+        es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.event_push_suntec_status="未推送"
+    </select>
+
+    <!-- 查询所有未推送给正阳科技的告警事件返回第一条 -->
+    <select id="getPushSuntecRestTop1" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_suntec_status
+        FROM
+        es_alert_event,
+        es_event_type
+        WHERE
+        es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.event_push_suntec_status="未推送" limit 1
+    </select>
+
+    <!-- 查询所有未推送给CMS的告警事件返回第一条 -->
+    <select id="getPushCmsRestTop1" resultMap="alertEventResultMap">
+        SELECT
+        es_alert_event.event_id,
+        es_alert_event.event_starttime,
+        es_alert_event.type_id,
+        es_event_type.type_description,
+        es_alert_event.channel_id,
+        es_alert_event.event_source,
+        es_alert_event.event_push_suntec_status
+        FROM
+        es_alert_event,
+        es_event_type
+        WHERE
+        es_alert_event.type_id=es_event_type.type_id
+        AND es_alert_event.event_push_status="推送失败" limit 1
+    </select>
+
+    <!-- 根据条件查询是否有同设备、同类型、10分钟内的告警事件 -->
+    <select id="checkAlertEventDuplicateOrNot" parameterType="com.xlauncher.entity.AlertEvent" resultMap="alertEventResultMap">
+        SELECT * from es_alert_event
+        WHERE channel_id=#{channelId} AND type_id=#{typeId}
+        ORDER BY event_starttime DESC
+        limit 1
+    </select>
+
+    <!-- resultMap -->
+    <resultMap id="alertEventResultMap" type="com.xlauncher.entity.AlertEvent">
+        <id property="eventId" column="event_id"/>
+        <result property="eventStartTime" column="event_starttime"/>
+        <result property="typeId" column="type_id"/>
+        <result property="typeDescription" column="type_description"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="eventSource" column="event_source"/>
+        <result property="eventPushStatus" column="event_push_status"/>
+        <result property="eventPushSuntecStatus" column="event_push_suntec_status"/>
+        <result property="orderId" column="order_id"/>
+    </resultMap>
+</mapper>

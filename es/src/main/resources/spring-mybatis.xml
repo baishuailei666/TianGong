@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context-3.1.xsd
+                        http://www.springframework.org/schema/tx
+                        http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 自动扫描 -->
+    <context:component-scan base-package="com.xlauncher.dao, com.xlauncher.service, com.xlauncher.utils, com.xlauncher.web"/>
+
+    <!-- 第一种方式：加载一个properties文件 -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:jdbc.properties"/>
+    </bean>
+
+    <!-- 配置数据源 配置文件jdbc.properties中的name，如果写成username，可能会与系统环境中的username变量冲突
+         所以到时候真正连接到数据库的时候，用户名就被替换成系统中的用户名-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close" >
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.name}"/>
+        <property name="password" value="${db.password}"/>
+
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${maxActive}"></property>
+        <!-- 连接池最大空闲 maxIdle is deprecated-->
+        <!--<property name="maxIdle" value="${maxIdle}"></property>-->
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${maxWait}"></property>
+
+    </bean>
+
+    <!--配置线程池-->
+    <bean id="userThreadPool" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <!--线程池维护线程的最少数量，核心线程数-->
+    <property name="corePoolSize" value="10"/>
+    <!--线程池维护线程的最大数量，最大线程数-->
+    <property name="maxPoolSize" value="100"/>
+    <!--线程池所使用的的缓冲任务队列，队列最大长度-->
+    <property name="queueCapacity" value="1000"/>
+    <!--线程池对拒绝任务（无线程可用）的处理策略-->
+    <property name="rejectedExecutionHandler">
+        <!--CallerRunsPolicy：主线程直接执行该任务，执行完之后尝试添加下一个任务到线程池中，
+        可以有效地降低先线程池内添加任务的速度-->
+        <bean class="java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy"/>
+    </property>
+    <!--线程池维护线程所允许的空闲时间，默认60S-->
+    <property name="keepAliveSeconds" value="300"/>
+</bean>
+
+    <!-- SqlSessionFactory
+    原生态的mybatis里，sqlMapConfig.xml全局配置文件里配置了environments元素【配置数据源】和一些映射文件，
+    我们是通过SqlSessionFactoryBuilder加载读取解析全局配置文件，然后生成SqlSessionFactory会话工厂。
+    现在mybatis和spring进行整合，则sqlMapConfig.xml里不再需要environments，数据源的配置交给了spring来管理；
+    SqlSessionFactoryBuilder解脱了，SqlSessionFactory会话工厂的创建交由spring来管理了
+    -->
+    <!-- mybatis和spring完美整合，不需要mybatis的配置映射文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据库连接池-->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 自动扫描mapping.xml文件 只有一个文件可以直接写死-->
+        <property name="mapperLocations" value="classpath:com/xlauncher/mapping/*.xml">
+        </property>
+    </bean>
+
+     <!--DAO接口所在包名，Spring会自动查找其下的类 配置扫描Dao接口包，动态实现Dao接口，注入到Spring容器中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--给出需要扫描的Dao接口包-->
+        <property name="basePackage" value="com.xlauncher.dao"/>
+        <!--注入sqlSessionFactory-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.FormHttpMessageConverter" />
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter" />
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" />
+            </list>
+        </property>
+    </bean>
+
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!--指定在连接方法上应用的事务属性 -->
+            <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <!-- aop配置 -->
+    <aop:config>
+        <aop:pointcut expression="execution(* *..service.*.*(..))" id="stockPointcut"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="stockPointcut"/>
+    </aop:config>
+
+</beans>

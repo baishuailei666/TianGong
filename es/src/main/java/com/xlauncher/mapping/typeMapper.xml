@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的
+例如namespace="me.gacl.mapping.userMapper"就是me.gacl.mapping(包名)+userMapper(userMapper.xml文件去除后缀)
+ -->
+<mapper namespace="com.xlauncher.dao.EventTypeDao">
+    <!-- 在select标签中编写查询的SQL语句， 设置select标签的id属性为getUser，id属性值必须是唯一的，不能够重复
+    使用parameterType属性指明查询时使用的参数类型，resultType属性指明查询返回的结果集类型
+    resultType="me.gacl.entity.User"就表示将查询结果封装成一个User类的对象返回
+    User类就是users表所对应的实体类
+    -->
+
+    <!--根据id查询得到一个对象-->
+    <select id="getEventType" parameterType="int" resultMap="alertEventTypeResultMap">
+        select * from es_event_type where type_id=#{typeId} AND type_delete=0
+    </select>
+
+    <!-- 创建(Create) -->
+    <insert id="addEventType" parameterType="com.xlauncher.entity.EventType">
+        insert into es_event_type(type_description,type_startTime,type_endTime,type_pushStatus)
+        values(#{typeDescription},#{typeStartTime},#{typeEndTime},#{typePushStatus})
+    </insert>
+
+    <!-- 删除(Remove) -->
+    <update id="deleteEventType" parameterType="int">
+        update es_event_type SET type_delete=1 where type_id=#{typeId}
+    </update>
+    <update id="upDelete" parameterType="int">
+        update es_event_type SET type_delete=0 where type_id=#{typeId}
+    </update>
+    <!-- 修改(Update) -->
+    <update id="updateEventType" parameterType="com.xlauncher.entity.EventType">
+        update es_event_type
+        <set>
+            <if test="typeDescription !=null and typeDescription != ''">
+                type_description=#{typeDescription},
+            </if>
+            <if test="typeStartTime !=null and typeStartTime != ''">
+                type_startTime=#{typeStartTime},
+            </if>
+            <if test="typeEndTime !=null and typeEndTime != ''">
+                type_endTime=#{typeEndTime},
+            </if>
+            <if test="typeDelete !=null and typeDelete != ''">
+                type_delete=#{typeDelete},
+            </if>
+            <if test="typePushStatus !=null and typePushStatus != ''">
+                type_pushStatus=#{typePushStatus}
+            </if>
+        </set>
+        where type_id=#{typeId}
+    </update>
+
+    <!-- 查询全部 -->
+    <select id="getAllEventsType" resultMap="alertEventTypeResultMap">
+        select * from es_event_type
+        where type_delete=0
+        <if test="typeDescription!='undefined' and typeDescription!='' ">
+            AND type_description=#{typeDescription}
+        </if>
+    </select>
+
+    <!-- 查询类型描述 -->
+    <select id="getTypeDesc" resultMap="alertEventTypeResultMap">
+        select * from es_event_type WHERE type_description=#{typeDesc}
+    </select>
+
+    <!-- resultMap -->
+    <resultMap id="alertEventTypeResultMap" type="com.xlauncher.entity.EventType">
+        <id property="typeId" column="type_id"/>
+        <result property="typeDescription" column="type_description"/>
+        <result property="typeStartTime" column="type_startTime"/>
+        <result property="typeEndTime" column="type_endTime"/>
+        <result property="typePushStatus" column="type_pushStatus"/>
+        <result property="typeDelete" column="type_delete"/>
+    </resultMap>
+</mapper>
