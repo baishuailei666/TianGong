@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.TodoDao">
+    <insert id="insertTodo" parameterType="com.xlauncher.entity.Todo">
+        INSERT INTO cms_todo(todo_user_id, todo_note, todo_time) VALUES (#{userId},#{todoNote},#{todoTime});
+    </insert>
+
+    <select id="listRegisterTodo" parameterType="int" resultMap="todoRM">
+        SELECT todo_id,todo_user_id,todo_note,todo_time,todo_status FROM cms_todo  WHERE todo_note='注册确认' AND todo_status=0  limit #{number},10
+    </select>
+
+    <select id="checkRepeat" resultType="int">
+        SELECT count(*) FROM cms_todo WHERE todo_user_id=#{userId} AND todo_note=#{todoNote} AND todo_status=0;
+    </select>
+    
+    <select id="countRegisterTodo" resultType="int">
+        SELECT COUNT(*) FROM cms_todo WHERE todo_note='注册确认' AND  todo_status=0;
+    </select>
+
+    <select id="listResetCodeTode" parameterType="int" resultMap="todoRM">
+        SELECT todo_id,todo_user_id,todo_note,todo_time,todo_status FROM cms_todo  WHERE todo_note='密码重置' AND todo_status=0  limit #{number},10
+    </select>
+
+    <select id="countResetCodetode" resultType="int">
+        SELECT COUNT(*) FROM cms_todo WHERE todo_note='密码重置' AND  todo_status=0;
+    </select>
+
+    <select id="getUserById" parameterType="int" resultType="int">
+        SELECT todo_user_id FROM cms_todo WHERE todo_id=#{todoId}
+    </select>
+    <!--提供接口显示用户当前注册确认状态-->
+    <select id="getStatusByUserId" parameterType="int" resultMap="todoRM">
+        SELECT * FROM cms_todo WHERE todo_user_id=#{userId} AND  todo_note="注册确认";
+    </select>
+    <!--用户被删除待办信息同时删除-->
+    <update id="deleteUserTodo" parameterType="int">
+        DELETE FROM cms_todo WHERE todo_user_id=#{userId}
+    </update>
+    <update id="agreeTodo">
+        UPDATE cms_todo SET todo_status=1,todo_handler =#{todoHandler} WHERE todo_id=#{todoId}
+    </update>
+    <update id="denyTodo">
+        UPDATE cms_todo SET todo_status=-1,todo_handler =#{todoHandler} WHERE todo_id=#{todoId}
+    </update>
+    <resultMap id="todoRM" type="com.xlauncher.entity.Todo">
+        <id property="todoId" column="todo_id"/>
+        <result property="todoNote" column="todo_note"/>
+        <result property="todoUserId" column="todo_user_id"/>
+        <result property="todoTime" column="todo_time"/>
+        <result property="todoStatus" column="todo_status"/>
+        <result property="todoHandler" column="todo_handler"/>
+    </resultMap>
+</mapper>

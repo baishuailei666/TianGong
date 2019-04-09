@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.OrganizationDao">
+    <insert id="insertOrganization" parameterType="com.xlauncher.entity.Organization">
+        INSERT INTO cms_organization(org_id, org_name, org_leader, org_location,org_duty, org_superior_id, org_email, org_phone)
+        VALUES (#{orgId}, #{name},#{orgLeader},#{orgLocation},#{orgDuty},#{orgSuperiorId},#{orgEmail},#{orgPhone})
+    </insert>
+    <update id="updateOrganization" parameterType="com.xlauncher.entity.Organization">
+        UPDATE cms_organization
+        <set>
+            <if test="name!=null and name!='' ">
+                org_name = #{name},
+            </if>
+            <if test="orgLeader!=null and orgLeader!='' ">
+                org_leader = #{orgLeader},
+            </if>
+            <if test="orgLeader!=null and orgLeader!='' ">
+                org_leader = #{orgLeader},
+            </if>
+            <if test="orgSuperiorId!=null and orgSuperiorId!=''">
+                org_superior_id = #{orgSuperiorId},
+            </if>
+            <if test="orgLocation!=null and orgLocation!='' ">
+                org_location=#{orgLocation},
+            </if>
+            <if test="orgEmail!=null and orgEmail!='' ">
+                org_email = #{orgEmail},
+            </if>
+            <if test="orgPhone!=null and orgPhone!='' ">
+                org_phone = #{orgPhone}
+            </if>
+        </set>
+        WHERE org_id =#{orgId}
+    </update>
+    <select id="listOrganization" resultMap="organizationRM">
+        SELECT * from cms_organization;
+    </select>
+    <delete id="deleteOrganization" parameterType="String">
+        DELETE FROM cms_organization WHERE org_id = #{orgId};
+    </delete>
+    <select id="listfollower" parameterType="String" resultType="String">
+        SELECT org_id FROM cms_organization WHERE org_superior_id=#{orgSuperiorId}
+    </select>
+    <!--根据最后一级组织获取上级组织-->
+    <select id="listSuperior" parameterType="String" resultMap="organizationRM" >
+        SELECT * FROM cms_organization WHERE org_id=#{orgId}
+    </select>
+    <select id="getOrgId" parameterType="String" resultMap="organizationRM">
+        SELECT * FROM cms_organization WHERE org_name=#{orgName}
+    </select>
+    <!--查询该组织是否已经存在-->
+    <select id="orgExistence" parameterType="String" resultType="int">
+        SELECT count(*) from cms_organization WHERE org_id=#{orgId}
+    </select>
+
+    <resultMap id="organizationRM" type="com.xlauncher.entity.Organization">
+        <id property="orgId" column="org_id"/>
+        <result property="name" column="org_name"/>
+        <result property="orgLeader" column="org_leader"/>
+        <result property="orgDuty" column="org_duty"/>
+        <result property="orgEmail" column="org_email"/>
+        <result property="orgLocation" column="org_location"/>
+        <result property="orgPhone" column="org_phone"/>
+        <result property="orgSuperiorId" column="org_superior_id"/>
+    </resultMap>
+</mapper>

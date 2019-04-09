@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.VirtualDeviceDao">
+
+    <!--添加一个虚拟设备信息-->
+    <insert id="insertVirtualDevice" parameterType="com.xlauncher.entity.VirtualDevice">
+        insert into cms_virtual_device(virtual_device_id,virtual_device_name,virtual_device_ip
+        ,virtual_device_port,virtual_device_user_name,virtual_device_user_password,virtual_device_type
+        ,virtual_device_model,virtual_device_vendor,virtual_device_channel_count,virtual_device_org_id,virtual_device_division_id,virtual_device_create_time)
+        values (#{virtualDeviceId},#{virtualDeviceName},#{virtualDeviceIp},#{virtualDevicePort}
+        ,#{virtualDeviceUserName},#{virtualDeviceUserPassword},#{virtualDeviceType},#{virtualDeviceModel},#{virtualDeviceVendor}
+        ,#{virtualDeviceChannelCount},#{virtualDeviceOrgId},#{virtualDeviceDivisionId},#{virtualDeviceCreateTime})
+    </insert>
+    <!--删除一个虚拟设备-->
+    <update id="deleteVirtualDevice" parameterType="String">
+        UPDATE cms_virtual_device SET virtual_device_status = "删除" where virtual_device_id=#{virtualDeviceId}
+    </update>
+    <!--更新虚拟设备信息-->
+    <update id="updateVirtualDevice" parameterType="com.xlauncher.entity.VirtualDevice">
+        update cms_virtual_device
+        <set>
+            <if test="virtualDeviceName !=null and virtualDeviceName!=''">
+                virtual_device_name=#{virtualDeviceName},
+            </if>
+            <if test="virtualDeviceIp !=null and virtualDeviceIp!=''">
+                virtual_device_name=#{virtualDeviceIp},
+            </if>
+            <if test="virtualDevicePort !=null and virtualDevicePort!=''">
+                virtual_device_port=#{virtualDevicePort},
+            </if>
+            <if test="virtualDeviceUserName !=null and virtualDeviceUserName!=''">
+                virtual_device_user_name=#{virtualDeviceUserName},
+            </if>
+            <if test="virtualDeviceUserPassword !=null and virtualDeviceUserPassword!=''">
+                virtual_device_user_password=#{virtualDeviceUserPassword},
+            </if>
+            <if test="virtualDeviceType !=null and virtualDeviceType!=''">
+                virtual_device_type=#{virtualDeviceType},
+            </if>
+            <if test="virtualDeviceModel !=null and virtualDeviceModel !=''">
+                virtual_device_model=#{virtualDeviceModel},
+            </if>
+            <if test="virtualDeviceVendor !=null and virtualDeviceVendor !=''">
+                virtual_device_vendor=#{virtualDeviceVendor},
+            </if>
+            <if test="virtualDeviceChannelCount!=null and virtualDeviceChannelCount!=''">
+                virtual_device_channel_count=#{virtualDeviceChannelCount},
+            </if>
+            <if test="virtualDeviceOrgId !=null and virtualDeviceOrgId!='' ">
+                virtual_device_org_id=#{virtualDeviceOrgId},
+            </if>
+            <if test="virtualDeviceDivisionId != null and virtualDeviceDivisionId!='' ">
+                virtual_device_division_id=#{virtualDeviceDivisionId},
+            </if>
+            <if test="virtualDeviceUpdateTime != null and virtualDeviceUpdateTime !='' ">
+                virtual_device_update_time=#{virtualDeviceUpdateTime}
+            </if>
+        </set>
+        where virtual_device_id=#{virtualDeviceId}
+    </update>
+    <!-- DIM反馈虚拟设备运行状态updateRuntimeVirtualDevice -->
+    <update id="updateRuntimeVirtualDevice" parameterType="com.xlauncher.entity.VirtualDevice">
+        update cms_virtual_device set virtual_device_fault=#{virtualDeviceFault}, virtual_device_fault_time=#{virtualDeviceFaultTime} WHERE virtual_device_id=#{virtualDeviceId}
+    </update>
+    <!--分页展现设备信息-->
+    <select id="listVirtualDevice" resultMap="virtualDeviceResultMap">
+        select * from cms_virtual_device, cms_organization , cms_admin_division
+        WHERE cms_virtual_device.virtual_device_org_id=cms_organization.org_id
+        AND cms_virtual_device.virtual_device_division_id=cms_admin_division.admin_division_id
+        AND virtual_device_status!="删除"
+        <if test="virtualDeviceType != 'undefined' and virtualDeviceType!='' ">
+            AND virtual_device_type LIKE concat('%',#{virtualDeviceType},'%')
+        </if>
+        <if test="virtualDeviceFaultCode != null and virtualDeviceFaultCode!='' ">
+            AND virtual_device_fault_code LIKE concat('%',#{virtualDeviceFaultCode},'%')
+        </if>
+        <if test="virtualDeviceStatus != 'undefined' and virtualDeviceStatus!='' ">
+            AND virtual_device_status LIKE concat('%',#{virtualDeviceStatus},'%')
+        </if>
+        <if test="orgName != 'undefined' and orgName!='' ">
+            AND cms_organization.org_name LIKE concat('%',#{orgName},'%')
+        </if>
+        <if test="adminDivisionName != 'undefined' and adminDivisionName!='' ">
+            AND cms_admin_division.admin_division_name LIKE concat('%',#{adminDivisionName},'%')
+        </if>
+        limit #{number},10
+    </select>
+    <!--获取表的行数-->
+    <select id="countPage" parameterType="String" resultType="int">
+        SELECT count(*) from cms_virtual_device, cms_organization , cms_admin_division
+        WHERE cms_virtual_device.virtual_device_org_id=cms_organization.org_id
+        AND cms_virtual_device.virtual_device_division_id=cms_admin_division.admin_division_id
+        AND virtual_device_status!="删除"
+        <if test="virtualDeviceType != 'undefined' and virtualDeviceType!='' ">
+            AND virtual_device_type LIKE concat('%',#{virtualDeviceType},'%')
+        </if>
+        <if test="virtualDeviceFaultCode != null and virtualDeviceFaultCode!='' ">
+            AND virtual_device_fault_code LIKE concat('%',#{virtualDeviceFaultCode},'%')
+        </if>
+        <if test="virtualDeviceStatus != 'undefined' and virtualDeviceStatus!='' ">
+            AND virtual_device_status LIKE concat('%',#{virtualDeviceStatus},'%')
+        </if>
+        <if test="orgName != 'undefined' and orgName!='' ">
+            AND cms_organization.org_name LIKE concat('%',#{orgName},'%')
+        </if>
+        <if test="adminDivisionName != 'undefined' and adminDivisionName!='' ">
+            AND cms_admin_division.admin_division_name LIKE concat('%',#{adminDivisionName},'%')
+        </if>
+    </select>
+    <!--查询该通道是否已经存在-->
+    <select id="virtualDeviceExistence" parameterType="String" resultType="int">
+        SELECT count(*) from cms_virtual_device WHERE virtual_device_id=#{virtualDeviceId} AND virtual_device_status!="删除"
+    </select>
+    <!-- 根据id查询得到一个设备对象 -->
+    <select id="getVirtualDeviceByVirtualDeviceId" parameterType="String" resultMap="virtualDeviceResultMap">
+        select * from cms_virtual_device, cms_organization , cms_admin_division
+        WHERE cms_virtual_device.virtual_device_org_id=cms_organization.org_id
+        AND cms_virtual_device.virtual_device_division_id=cms_admin_division.admin_division_id
+        AND virtual_device_id=#{virtualDeviceId}
+    </select>
+    <resultMap id="virtualDeviceResultMap" type="com.xlauncher.entity.VirtualDevice">
+        <id property="id" column="id"/>
+        <result property="virtualDeviceId" column="virtual_device_id"/>
+        <result property="virtualDeviceName" column="virtual_device_name"/>
+        <result property="virtualDeviceIp" column="virtual_device_ip"/>
+        <result property="virtualDevicePort" column="virtual_device_port"/>
+        <result property="virtualDeviceUserName" column="virtual_device_user_name"/>
+        <result property="virtualDeviceUserPassword" column="virtual_device_user_password"/>
+        <result property="virtualDeviceType" column="virtual_device_type"/>
+        <result property="virtualDeviceModel" column="virtual_device_model"/>
+        <result property="virtualDeviceVendor" column="virtual_device_vendor"/>
+        <result property="virtualDeviceFaultTime" column="virtual_device_fault_time"/>
+        <result property="virtualDeviceFaultCode" column="virtual_device_fault_code"/>
+        <result property="virtualDeviceFault" column="virtual_device_fault"/>
+        <result property="virtualDeviceChannelCount" column="virtual_device_channel_count"/>
+        <result property="virtualDeviceStatus" column="virtual_device_status"/>
+        <result property="virtualDeviceOrgId" column="virtual_device_org_id"/>
+        <result property="virtualDeviceDivisionId" column="virtual_device_division_id"/>
+        <result property="virtualDeviceCreateTime" column="virtual_device_create_time"/>
+        <result property="virtualDeviceUpdateTime" column="virtual_device_update_time"/>
+        <result property="orgName" column="org_name"/>
+        <result property="adminDivisionName" column="admin_division_name"/>
+    </resultMap>
+</mapper>

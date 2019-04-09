@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.UserDao">
+    <insert id="addUser" parameterType="com.xlauncher.entity.User">
+        INSERT INTO user(user_name) VALUES (#userName)
+    </insert>
+    <!--用户名查重-->
+    <select id="countUserByLoginName" parameterType="String" resultType="int">
+        SELECT count(*) FROM cms_user WHERE user_login_name=#{userLoginName} AND user_status IN (-1,0,1)
+    </select>
+    <!--用户证件信息查重-->
+    <select id="countUserCardId" parameterType="String" resultType="int">
+        SELECT count(*) FROM cms_user WHERE user_card_id=#{userCardId} AND user_status IN (-1,0,1)
+    </select>
+    <!--用户编号查重-->
+    <select id="countUserCode" resultType="int">
+        SELECT count(*) FROM cms_user WHERE user_code=#{userCode} AND user_status IN (-1,0,1)
+        <if test="userId !='undefined' and userId!=''">
+            AND user_id != #{userId}
+        </if>
+    </select>
+
+    <!-- 用户token验证 -->
+    <select id="checkToken" parameterType="String" resultMap="userRM">
+        SELECT * FROM cms_user WHERE token=#{token}
+    </select>
+
+    <!-- 提供发送邮件用户信息 -->
+    <select id="mailUser" resultMap="mailUserRM">
+        SELECT user_code, user_login_name, user_name FROM cms_user WHERE user_id != 1
+        <if test="userName != 'undefined' and userName !=''">
+            AND user_name LIKE concat('%',#{userName},'%')
+        </if>
+    </select>
+
+    <!-- 查看个人信息-->
+    <select id="checkUser" parameterType="String" resultMap="userRM">
+        SELECT * FROM cms_user , cms_organization , cms_division_temp
+        WHERE cms_user.user_org_id=cms_organization.org_id
+        AND token=#{token}
+    </select>
+    <!-- 用户注册后登录查看个人信息-->
+    <select id="checkInitUser" parameterType="String" resultMap="userRM">
+        SELECT * FROM cms_user WHERE  token=#{token}
+    </select>
+
+    <select id="getToken" parameterType="String" resultType="String">
+        SELECT token FROM cms_user WHERE user_login_name=#{userLoginName}
+    </select>
+    <!--过期token销毁-->
+    <update id="deleteToken" parameterType="String">
+        UPDATE cms_user SET  token= NULL WHERE token=#{token}
+    </update>
+
+    <select id="getUserById" resultMap="userRM">
+        SELECT * FROM cms_user , cms_organization , cms_division_temp
+        WHERE cms_user.user_org_id=cms_organization.org_id
+        AND user_id = #{userId}
+    </select>
+
+    <select id="getToDoUserById" resultMap="userRM">
+        SELECT * FROM cms_user WHERE user_id = #{userId}
+    </select>
+
+    <select id="getUserByLoginName" resultMap="userRM">
+        SELECT * from cms_user WHERE  user_login_name = #{userLoginName}
+    </select>
+
+    <delete id="deleteUser" parameterType="int">
+        DELETE FROM cms_user WHERE user_id = #{userId}
+    </delete>
+    <select id="getUserByOrg" parameterType="String" resultMap="userRM">
+        SELECT * from cms_user WHERE  user_org_id=#{orgId}
+    </select>
+
+    <select id="listUser" resultMap="userRM">
+        SELECT * FROM cms_user , cms_organization , cms_division_temp
+        WHERE cms_user.user_org_id=cms_organization.org_id
+        AND user_id != 1
+        AND user_status IN (-1,0,1)
+        <if test="userName!='undefined' and userName!='' ">
+            AND user_name LIKE concat('%',#{userName},'%')
+        </if>
+        <if test="userCode!='undefined' and userCode!='' ">
+            AND user_code LIKE concat('%',#{userCode},'%')
+        </if>
+        limit #{number},10
+    </select>
+
+    <select id="countPage" resultType="int">
+        SELECT count(*) FROM cms_user , cms_organization , cms_division_temp
+        WHERE cms_user.user_org_id=cms_organization.org_id
+        AND user_id != 1
+        AND user_status IN (-1,0,1)
+        <if test="userName!='undefined' and userName!='' ">
+            AND user_name LIKE concat('%',#{userName},'%')
+        </if>
+        <if test="userCode!='undefined' and userCode!='' ">
+            AND user_code LIKE concat('%',#{userCode},'%')
+        </if>
+    </select>
+
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="userId" parameterType="com.xlauncher.entity.User">
+        INSERT INTO cms_user(user_code,user_login_name,user_password,user_name,user_card_id,user_phone,user_email,admin_division_id,user_org_id)
+        VALUES (#{userCode},#{userLoginName},#{userPassword},#{userName},#{userCardId},#{userPhone},#{userEmail},#{adminDivisionId},#{userOrgId})
+    </insert>
+
+    <!-- 初始化用户 - 超级管理员-->
+    <insert id="rootUser" parameterType="com.xlauncher.entity.User">
+        INSERT INTO cms_user(user_id,user_code,user_login_name,user_password,user_name,user_phone,admin_division_id,user_org_id,user_question)
+        VALUES (#{userId},#{userCode},#{userLoginName},#{userPassword},#{userName},#{userPhone},#{adminDivisionId},#{userOrgId},#{userQuestion})
+    </insert>
+    <!-- 初始化用户 - 判断数据库是否被初始化-->
+    <select id="rootCheck" resultMap="userRM">
+        SELECT * from cms_user
+    </select>
+
+    <select id="userCheck" resultMap="userRM">
+        SELECT * from cms_user WHERE user_login_name=#{userLoginName} AND user_name=#{userName} AND user_phone=#{userPhone} AND user_card_id=#{userCardId}
+    </select>
+
+    <update id="updateUser" parameterType="com.xlauncher.entity.User">
+        UPDATE cms_user
+        <set>
+
+            <if test="userName!=null and userName!='' ">
+                user_name=#{userName},
+            </if>
+            <if test="userCode!=null and userCode!='' ">
+                user_code=#{userCode},
+            </if>
+            <if test="userPassword!=null and userPassword!='' ">
+                user_password=#{userPassword},
+            </if>
+            <if test="userPhone!=null and userPhone!='' ">
+                user_phone=#{userPhone},
+            </if>
+            <if test="userEmail!=null and userEmail!='' ">
+                user_email=#{userEmail},
+            </if>
+            <if test="userLoginCount!=null and userLoginCount!='' ">
+                user_login_count=#{userLoginCount},
+            </if>
+            <if test="userLastLogin!=null and userLastLogin!='' ">
+                user_last_login=#{userLastLogin},
+            </if>
+            <if test="adminDivisionId!=null and adminDivisionId!='' ">
+                admin_division_id=#{adminDivisionId},
+            </if>
+            <if test="userOrgId!=null and userOrgId!='' ">
+                user_org_id=#{userOrgId},
+            </if>
+            <if test="userQuestion!=0 and userQuestion!=null">
+                user_question=#{userQuestion},
+            </if>
+            <if test="userStatus!=0 and  userStatus!=null">
+                user_status=#{userStatus},
+            </if>
+            <if test="token!=null and token!='' ">
+                token=#{token}
+            </if>
+        </set>
+        where user_id=#{userId}
+    </update>
+
+    <resultMap id="mailUserRM" type="com.xlauncher.entity.User">
+        <result property="userCode" column="user_code"/>
+        <result property="userLoginName" column="user_login_name"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
+    <resultMap id="userRM" type="com.xlauncher.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="userCode" column="user_code"/>
+        <result property="userLoginName" column="user_login_name"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userName" column="user_name"/>
+        <result property="userCardId" column="user_card_id"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userLoginCount" column="user_login_count"/>
+        <result property="userLastLogin" column="user_last_login"/>
+        <result property="adminDivisionId" column="admin_division_id"/>
+        <result property="userOrgId" column="user_org_id"/>
+        <result property="userQuestion" column="user_question"/>
+        <result property="userStatus" column="user_status"/>
+        <result property="orgName" column="org_name"/>
+        <result property="divisionName" column="division_name"/>
+        <result property="token" column="token"/>
+    </resultMap>
+</mapper>

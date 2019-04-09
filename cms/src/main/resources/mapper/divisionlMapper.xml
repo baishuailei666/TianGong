@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.AdminDivisionDao">
+    <!--获取所有省-->
+    <select id="listDivisionP" resultMap="divisionRM">
+        SELECT * from cms_division_province
+    </select>
+    <!--获取所有市-->
+    <select id="listDivisionCi" resultMap="divisionRM">
+        SELECT * from cms_division_city
+    </select>
+    <!--获取所有县-->
+    <select id="listDivisionC" resultMap="divisionRM">
+        SELECT * from cms_division_county
+    </select>
+    <!--获取所有镇-->
+    <select id="listDivisionT" resultMap="divisionRM">
+        SELECT * from cms_division_town
+    </select>
+    <!--获取所有村-->
+    <select id="listDivisionV" resultMap="divisionRM">
+        SELECT * from cms_division_village
+    </select>
+       <!--计算行数-->
+    <select id="countDivisionP" resultType="int">
+        SELECT count(*) FROM cms_division_province WHERE division_superior_id=#{divisionSuperiorId}
+    </select>
+    <select id="countDivisionCi" resultType="int">
+        SELECT count(*) FROM cms_division_city WHERE division_superior_id=#{divisionSuperiorId}
+    </select>
+    <select id="countDivisionC" resultType="int">
+        SELECT count(*) FROM cms_division_county WHERE division_superior_id=#{divisionSuperiorId}
+    </select>
+    <select id="countDivisionT" resultType="int">
+        SELECT count(*) FROM cms_division_town WHERE division_superior_id=#{divisionSuperiorId}
+    </select>
+    <select id="countDivisionV" resultType="int">
+        SELECT count(*) FROM cms_division_village WHERE division_superior_id=#{divisionSuperiorId}
+    </select>
+    <!--添加到省级-->
+    <insert id="insertDivisionP" parameterType="com.xlauncher.entity.Division">
+        INSERT INTO cms_division_province(division_superior_id, division_id, division_name) VALUES (#{divisionSuperior},#{divisionId},#{divisionName})
+    </insert>
+    <!--添加到市级-->
+    <insert id="insertDivisionCi" parameterType="com.xlauncher.entity.Division">
+        INSERT INTO cms_division_city(division_superior_id, division_id, division_name) VALUES (#{divisionSuperior},#{divisionId},#{divisionName})
+    </insert>
+    <!--添加到县级-->
+    <insert id="insertDivisionC" parameterType="com.xlauncher.entity.Division">
+        INSERT INTO cms_division_county(division_superior_id, division_id, division_name) VALUES (#{divisionSuperior},#{divisionId},#{divisionName})
+    </insert>
+    <!--添加到镇级-->
+    <insert id="insertDivisionT" parameterType="com.xlauncher.entity.Division">
+        INSERT INTO cms_division_town(division_superior_id, division_id, division_name) VALUES (#{divisionSuperior},#{divisionId},#{divisionName})
+    </insert>
+    <!--添加到村级-->
+    <insert id="insertDivisionV" parameterType="com.xlauncher.entity.Division">
+        INSERT INTO cms_division_village(division_superior_id, division_id, division_name) VALUES (#{divisionSuperior},#{divisionId},#{divisionName})
+    </insert>
+    <!--更新镇级-->
+    <update id="updateDivisionT" parameterType="com.xlauncher.entity.Division">
+        UPDATE cms_division_town SET division_id = #{divisionId},division_name = #{divisionName}
+    </update>
+    <!--更新村级-->
+    <update id="updateDivisionV" parameterType="com.xlauncher.entity.Division">
+        UPDATE cms_division_village SET division_id = #{divisionId},division_name = #{divisionName}
+    </update>
+    <!--删除镇下所有村-->
+    <delete id="deleteDivisionTV" parameterType="BigInteger">
+        DELETE FROM cms_division_village WHERE division_superior_id = #{divisionSuperiorId};
+    </delete>
+    <!--删除县下所有镇-->
+    <delete id="deleteDivisionCT" parameterType="BigInteger">
+        DELETE FROM cms_division_town WHERE division_superior_id = #{divisionSuperiorId};
+    </delete>
+    <!--删除市下所有县-->
+    <delete id="deleteDivisionCC" parameterType="BigInteger">
+        DELETE FROM cms_division_county WHERE division_superior_id = #{divisionSuperiorId};
+    </delete>
+    <!--删除省下所有市-->
+    <delete id="deleteDivisionPC" parameterType="BigInteger">
+        DELETE FROM cms_division_city WHERE division_superior_id = #{divisionSuperiorId};
+    </delete>
+    <!--删除村级-->
+    <delete id="deleteDivisionV" parameterType="int">
+        DELETE FROM cms_division_village WHERE division_id = #{divisionId};
+    </delete>
+    <!--删除镇级别-->
+    <delete id="deleteDivisionT" parameterType="BigInteger">
+        DELETE FROM cms_division_town WHERE division_id = #{divisionId};
+    </delete>
+    <!--删除县级别-->
+    <delete id="deleteDivisionC" parameterType="BigInteger">
+        DELETE FROM cms_division_county WHERE division_id = #{divisionId};
+    </delete>
+    <!--删除市级别-->
+    <delete id="deleteDivisionCi" parameterType="BigInteger">
+        DELETE FROM cms_division_city WHERE division_id = #{divisionId};
+    </delete>
+    <!--删除省级别-->
+    <delete id="deleteDivisionP" parameterType="BigInteger">
+        DELETE FROM cms_division_province WHERE division_id = #{divisionId};
+    </delete>
+
+
+
+    <!--获取北京-->
+    <select id="listDivisionB" resultMap="divisionRM" >
+        SELECT * from cms_division_temp;
+    </select>
+    <!--更新北京-->
+    <update id="updateDivisionB" parameterType="com.xlauncher.entity.Division">
+        UPDATE cms_division_temp SET division_name=#{name} WHERE division_id = #{divisionId}
+    </update>
+    <!--添加到北京-->
+    <insert id="insertDivisionB" parameterType="com.xlauncher.entity.Division">
+        INSERT INTO cms_division_temp(division_superior_id, division_id, division_name) VALUES (#{divisionSuperiorId},#{divisionId},#{name})
+    </insert>
+    <!--删除北京-->
+    <delete id="deleteDivisionB" parameterType="BigInteger">
+        DELETE FROM cms_division_temp WHERE division_id=#{divisionId}
+    </delete>
+    <!--获取所有下属-->
+    <select id="listfollower" parameterType="BigInteger" resultType="BigInteger" >
+        SELECT division_id FROM cms_division_temp WHERE division_superior_id=#{divisionSuperiorId}
+    </select>
+    <!--行政区划编号查重-->
+    <select id="countDivisionId" parameterType="BigInteger" resultType="int">
+        SELECT count(*) FROM cms_division_temp WHERE division_id=#{divisionId}
+    </select>
+    <!--根据最后一级区划获取上级区划-->
+    <select id="listSuperior" parameterType="BigInteger" resultMap="divisionRM" >
+        SELECT * FROM cms_division_temp WHERE division_id=#{divisionId}
+    </select>
+
+    <resultMap id="divisionRM" type="com.xlauncher.entity.Division">
+        <id column="id" property="id" />
+        <result column="division_superior_id" property="divisionSuperiorId"/>
+        <result column="division_id" property="divisionId"/>
+        <result column="division_name" property="name"/>
+    </resultMap>
+</mapper>

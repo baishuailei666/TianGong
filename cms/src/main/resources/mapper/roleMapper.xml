@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.RoleDao">
+    <insert id="insertRole" useGeneratedKeys="true" keyProperty="roleId" parameterType="com.xlauncher.entity.Role">
+        INSERT INTO cms_role(role_name, role_description,role_status) VALUES (#{roleName},#{roleDescription},#{roleStatus})
+    </insert>
+    <!--初始化用户-超级管理员-->
+    <insert id="rootRole" parameterType="com.xlauncher.entity.Role">
+        INSERT INTO cms_role(role_id, role_name, role_description,role_status) VALUES (#{roleId},#{roleName},#{roleDescription},#{roleStatus})
+    </insert>
+
+    <select id="countRoleName" parameterType="String" resultType="int">
+        select count(*) FROM cms_role WHERE role_name=#{roleName} AND role_id!="1";
+    </select>
+
+    <delete id="deleteRole" parameterType="int">
+        DELETE FROM cms_role WHERE role_id=#{roleId};
+    </delete>
+
+    <update id="updateRole" parameterType="com.xlauncher.entity.Role">
+        UPDATE cms_role
+        <set>
+            <if test="roleName!=null and roleName!='' ">
+                role_name=#{roleName},
+            </if>
+            <if test="roleDescription!=null and roleDescription!='' ">
+                role_description=#{roleDescription},
+            </if>
+            <if test="roleStatus!=null and roleStatus!='' ">
+                role_status=#{roleStatus}
+            </if>
+        </set>
+        WHERE role_id = #{roleId}
+    </update>
+
+    <select id="listRole" resultMap="roleRM">
+        SELECT * from cms_role where role_id!="1"
+    </select>
+
+    <select id="getRoleById" parameterType="int" resultMap="roleRM">
+        SELECT * from cms_role WHERE role_id=#{roleId};
+    </select>
+
+    <select id="getRoleNameById" parameterType="int" resultType="String">
+        SELECT role_name from cms_role WHERE role_id=#{roleId};
+    </select>
+
+    <resultMap id="roleRM" type="com.xlauncher.entity.Role">
+        <id column="role_id" property="roleId"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_description" property="roleDescription"/>
+        <result column="role_status" property="roleStatus"/>
+    </resultMap>
+
+</mapper>

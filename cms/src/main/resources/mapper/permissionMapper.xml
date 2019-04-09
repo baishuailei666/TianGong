@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.PermissionDao">
+    <!--添加权限-->
+    <insert id="insertPermission" parameterType="com.xlauncher.entity.Permission">
+        INSERT INTO cms_permission(permission_name, permission_note, permission_superior_name)
+         VALUES (#{permissionName},#{permissionNote},#{permissionSuperiorName})
+    </insert>
+    <delete id="deletePermission" parameterType="int">
+        DELETE FROM cms_permission WHERE permission_id=#{permissionId};
+    </delete>
+    <update id="updatePermission" parameterType="com.xlauncher.entity.Permission">
+        UPDATE cms_permission
+        <set>
+            <if test="permissionName!=null and permissionName!='' ">
+                permission_name=#{psermissionName},
+            </if>
+            <if test="permissionNote!=null and permissionNote!='' ">
+                permission_note=#{permissionNote},
+            </if>
+            <if test="permissionSuperiorName!=null and permissionSuperiorName!='' ">
+                permission_superior_name=#{permissionSuperiorName}
+            </if>
+        </set>
+        WHERE permission_id = #{permissionId};
+    </update>
+    <select id="listPermission" resultMap="permissionRM">
+        SELECT * FROM cms_permission;
+    </select>
+    <select id="getPermission" parameterType="int" resultMap="permissionRM">
+        SELECT * from cms_permission WHERE permission_id=#{permissionId};
+    </select>
+    <select id="getPermissionName" parameterType="int" resultType="String">
+        SELECT permission_name FROM cms_permission WHERE permission_id=#{permissionId};
+    </select>
+    <resultMap id="permissionRM" type="com.xlauncher.entity.Permission">
+        <id property="permissionId" column="permission_id" />
+        <result property="permissionName" column="permission_name"/>
+        <result property="permissionNote" column="permission_note"/>
+        <result property="permissionSuperiorName" column="permission_superior_name"/>
+    </resultMap>
+</mapper>

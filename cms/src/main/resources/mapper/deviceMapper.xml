@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.DeviceDao">
+
+    <!--添加一个设备信息-->
+    <insert id="insertDevice" parameterType="com.xlauncher.entity.Device">
+        insert into cms_device(device_id,device_name,device_ip,device_port,device_user_name
+        ,device_user_password,device_type,device_model, device_vendor
+        ,device_channel_count,device_org_id,device_division_id,device_create_time)
+        values (#{deviceId},#{deviceName},#{deviceIp},#{devicePort},#{deviceUserName},
+        #{deviceUserPassword},#{deviceType},#{deviceModel},#{deviceVendor}
+        ,#{deviceChannelCount},#{deviceOrgId},#{deviceDivisionId},#{deviceCreateTime})
+    </insert>
+    <select id="getDeviceByOrg" resultMap="deviceResultMap" parameterType="String">
+        SELECT * FROM cms_device WHERE device_org_id=#{orgId}
+    </select>
+    <!--删除一个设备-->
+    <update id="deleteDevice" parameterType="String">
+        DELETE FROM cms_device WHERE device_id=#{deviceId}
+    </update>
+    <!--激活设备activeDevice-->
+    <update id="activeDevice" parameterType="String">
+        UPDATE cms_device SET cms_device.device_status = "在用" where cms_device.device_id=#{deviceId}
+    </update>
+    <!--停用设备activeDevice-->
+    <update id="disableDevice" parameterType="String">
+        UPDATE cms_device SET cms_device.device_status = "停用" where cms_device.device_id=#{deviceId}
+    </update>
+    <!--更新设备信息-->
+    <update id="updateDevice" parameterType="com.xlauncher.entity.Device">
+        update cms_device
+        <set>
+            <if test="deviceName !=null and deviceName!=''">
+                device_name=#{deviceName},
+            </if>
+            <if test="deviceIp !=null and deviceIp!=''">
+                device_ip=#{deviceIp},
+            </if>
+            <if test="devicePort !=null and devicePort!=''">
+                device_port=#{devicePort},
+            </if>
+            <if test="deviceUserName !=null and deviceUserName!=''">
+                device_user_name=#{deviceUserName},
+            </if>
+            <if test="deviceUserPassword !=null and deviceUserPassword!=''">
+                device_user_password=#{deviceUserPassword},
+            </if>
+            <if test="deviceType !=null and deviceType!=''">
+                device_type=#{deviceType},
+            </if>
+            <if test="deviceModel !=null and deviceModel !=''">
+                device_model=#{deviceModel},
+            </if>
+            <if test="deviceVendor !=null and deviceVendor !=''">
+                device_vendor=#{deviceVendor},
+            </if>
+            <if test="deviceChannelCount !=null and deviceChannelCount!=''">
+                device_channel_count=#{deviceChannelCount},
+            </if>
+            <if test="deviceOrgId !=null and deviceOrgId!='' ">
+                device_org_id=#{deviceOrgId},
+            </if>
+            <if test="deviceDivisionId != null and deviceDivisionId!='' ">
+                device_division_id=#{deviceDivisionId},
+            </if>
+            <if test="deviceUpdateTime != null and deviceUpdateTime !='' ">
+                device_update_time=#{deviceUpdateTime}
+            </if>
+        </set>
+        where device_id=#{deviceId}
+    </update>
+    <!-- DIM反馈设备运行状态updateRuntimeDevice -->
+    <update id="updateRuntimeDevice" parameterType="com.xlauncher.entity.Device">
+        update cms_device set device_fault_code=#{deviceFaultCode}, device_fault=#{deviceFault}, device_fault_time=#{deviceFaultTime} WHERE device_id=#{deviceId}
+    </update>
+    <!-- 设备运行状态getRuntimeDevice -->
+    <select id="getRuntimeDevice" resultMap="deviceResultMap">
+        SELECT * FROM cms_device , cms_organization
+        WHERE cms_device.device_org_id=cms_organization.org_id
+        AND device_fault_code != 0
+        <if test="upStartTime!='undefined' and upStartTime!='' ">
+            AND device_fault_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+            AND device_fault_time &lt;= #{lowStartTime}
+        </if>
+        <if test="deviceType != 'undefined' and deviceType!='' ">
+            AND device_type LIKE concat('%',#{deviceType},'%')
+        </if>
+        <if test="deviceName != 'undefined' and deviceName!='' ">
+            AND device_name LIKE concat('%',#{deviceName},'%')
+        </if>
+        <if test="deviceFault != 'undefined' and deviceFault!='' ">
+            AND device_fault LIKE concat('%',#{deviceFault},'%')
+        </if>
+        <if test="deviceStatus != 'undefined' and deviceStatus!='' ">
+            AND device_status LIKE concat('%',#{deviceStatus},'%')
+        </if>
+        <if test="deviceUserName != 'undefined' and deviceUserName!='' ">
+            AND device_user_name LIKE concat('%',#{deviceUserName},'%')
+        </if>
+        limit #{number}, 10
+    </select>
+    <!-- 设备运行状态countRuntimeDevice -->
+    <select id="countRuntimeDevice" resultType="int">
+        SELECT count(*) FROM cms_device , cms_organization
+        WHERE cms_device.device_org_id=cms_organization.org_id
+        AND device_fault_code != 0
+        <if test="upStartTime!='undefined' and upStartTime!='' ">
+            AND device_fault_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+            AND device_fault_time &lt;= #{lowStartTime}
+        </if>
+        <if test="deviceType != 'undefined' and deviceType!='' ">
+            AND device_type LIKE concat('%',#{deviceType},'%')
+        </if>
+        <if test="deviceName != 'undefined' and deviceName!='' ">
+            AND device_name LIKE concat('%',#{deviceName},'%')
+        </if>
+        <if test="deviceFault != 'undefined' and deviceFault!='' ">
+            AND device_fault LIKE concat('%',#{deviceFault},'%')
+        </if>
+        <if test="deviceStatus != 'undefined' and deviceStatus!='' ">
+            AND device_status LIKE concat('%',#{deviceStatus},'%')
+        </if>
+        <if test="deviceUserName != 'undefined' and deviceUserName!='' ">
+            AND device_user_name LIKE concat('%',#{deviceUserName},'%')
+        </if>
+    </select>
+    <!--分页息展现设备信-->
+    <select id="listDevice" resultMap="deviceResultMap">
+        select * from cms_device , cms_organization
+        WHERE cms_device.device_org_id=cms_organization.org_id
+        AND device_status!="删除"
+        <if test="deviceType != 'undefined' and deviceType!='' ">
+            AND device_type LIKE concat('%',#{deviceType},'%')
+        </if>
+        <if test="deviceFaultCode != null and deviceFaultCode!='' ">
+            AND device_fault_code LIKE concat('%',#{deviceFaultCode},'%')
+        </if>
+        <if test="deviceStatus != 'undefined' and deviceStatus!='' ">
+            AND device_status LIKE concat('%',#{deviceStatus},'%')
+        </if>
+        <if test="orgName != 'undefined' and orgName!='' ">
+            AND cms_organization.org_name LIKE concat('%',#{orgName},'%')
+        </if>
+        <if test="adminDivisionName != 'undefined' and adminDivisionName!='' ">
+            AND cms_division_temp.division_name LIKE concat('%',#{adminDivisionName},'%')
+        </if>
+        limit #{number},10
+    </select>
+    <!--获取表的行数-->
+    <select id="countPage" parameterType="String" resultType="int">
+        SELECT count(*) from cms_device , cms_organization
+        WHERE cms_device.device_org_id=cms_organization.org_id
+        AND device_status!="删除"
+        <if test="deviceType != 'undefined' and deviceType!='' ">
+            AND device_type LIKE concat('%',#{deviceType},'%')
+        </if>
+        <if test="deviceFaultCode != null and deviceFaultCode!='' ">
+            AND device_fault_code LIKE concat('%',#{deviceFaultCode},'%')
+        </if>
+        <if test="deviceStatus != 'undefined' and deviceStatus!='' ">
+            AND device_status LIKE concat('%',#{deviceStatus},'%')
+        </if>
+        <if test="orgName != 'undefined' and orgName!='' ">
+            AND cms_organization.org_name LIKE concat('%',#{orgName},'%')
+        </if>
+        <if test="adminDivisionName != 'undefined' and adminDivisionName!='' ">
+            AND cms_division_temp.division_name LIKE concat('%',#{adminDivisionName},'%')
+        </if>
+    </select>
+    <!--查询该通道是否已经存在-->
+    <select id="deviceExistence" parameterType="String" resultType="int">
+        SELECT count(*) from cms_device WHERE device_id=#{deviceId} AND device_status!='停用';
+    </select>
+    <!--设备名称查重-->
+    <select id="countDeviceName" parameterType="String" resultType="int">
+        SELECT count(*) FROM cms_device WHERE device_name=#{deviceName} AND device_status!='删除'
+        <if test="deviceId != 'undefined' and deviceId != '' ">
+            AND device_id != #{deviceId}
+        </if>
+    </select>
+    <!--设备告警监控中心-->
+    <!--显示最新5条的设备告警信息-->
+    <select id="getDeviceFault" resultMap="deviceFaultMap">
+        SELECT device_id, device_name, device_fault, device_fault_time FROM cms_device WHERE device_status="在用"
+        AND device_fault_code != 0
+        ORDER BY device_fault_time DESC limit 5
+    </select>
+    <!--饼状图、获取设备告警类型数量-->
+    <select id="getDeviceFaultType" resultType="String">
+        SELECT DISTINCT device_fault FROM cms_device
+    </select>
+    <select id="getDeviceFaultCount" parameterType="String" resultType="int">
+        SELECT count(device_fault) FROM cms_device
+        <where>
+            <if test="deviceFault != 'undefined' and deviceFault != ''" >
+                device_fault=#{deviceFault}
+            </if>
+        </where>
+    </select>
+    <!-- 根据id查询得到一个设备对象 -->
+    <select id="getDeviceByDeviceId" parameterType="String" resultMap="deviceResultMap">
+        select * from cms_device , cms_organization
+        WHERE cms_device.device_org_id=cms_organization.org_id
+        AND device_id=#{deviceId}
+    </select>
+    <!--查询某设备支持的通道总数-->
+    <select id="deviceChannelCount" resultMap="deviceResultMap" parameterType="String">
+        SELECT * FROM cms_device WHERE device_id=#{channelSourceId}
+    </select>
+
+    <resultMap id="partDeviceResultMap" type="com.xlauncher.entity.Device">
+        <id property="id" column="id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="deviceStatus" column="device_status"/>
+        <result property="orgName" column="org_name"/>
+        <result property="divisionName" column="division_name"/>
+    </resultMap>
+
+    <resultMap id="deviceFaultMap" type="com.xlauncher.entity.Device">
+        <id property="id" column="id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="deviceStatus" column="device_status"/>
+        <result property="deviceFaultCode" column="device_fault_code"/>
+        <result property="deviceFault" column="device_fault"/>
+        <result property="deviceFaultTime" column="device_fault_time"/>
+    </resultMap>
+
+    <resultMap id="deviceResultMap" type="com.xlauncher.entity.Device">
+        <id property="id" column="id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="deviceIp" column="device_ip"/>
+        <result property="devicePort" column="device_port"/>
+        <result property="deviceUserName" column="device_user_name"/>
+        <result property="deviceUserPassword" column="device_user_password"/>
+        <result property="deviceType" column="device_type"/>
+        <result property="deviceModel" column="device_model"/>
+        <result property="deviceVendor" column="device_vendor"/>
+        <result property="deviceFaultCode" column="device_fault_code"/>
+        <result property="deviceFault" column="device_fault"/>
+        <result property="deviceChannelCount" column="device_channel_count"/>
+        <result property="deviceStatus" column="device_status"/>
+        <result property="deviceOrgId" column="device_org_id"/>
+        <result property="deviceDivisionId" column="device_division_id"/>
+        <result property="deviceCreateTime" column="device_create_time"/>
+        <result property="deviceUpdateTime" column="device_update_time"/>
+        <result property="deviceFaultTime" column="device_fault_time"/>
+        <result property="orgName" column="org_name"/>
+        <result property="divisionName" column="division_name"/>
+    </resultMap>
+</mapper>

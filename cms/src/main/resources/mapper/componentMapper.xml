@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.ComponentDao">
+    <!-- 根据组件缩写得到一个组件信息,用于DIM同步-->
+    <select id="getComponentByAbbr" parameterType="String" resultMap="componentResultMap">
+        select * from cms_component where component_abbr=#{componentAbbr}
+    </select>
+    <!-- 根据组件id查询得到一个组件信息-->
+    <select id="getComponentById" parameterType="int" resultMap="componentResultMap">
+        SELECT * from cms_component WHERE id=#{id}
+    </select>
+    <!--添加组件信息-->
+    <insert id="addComponent" parameterType="com.xlauncher.entity.Component">
+        insert into cms_component(component_abbr, component_name, component_ip, component_port
+        , component_description, component_configuration)
+        values (#{componentAbbr},#{componentName},#{componentIp},#{componentPort}
+        ,#{componentDescription},#{componentConfiguration,javaType=Map,jdbcType=VARCHAR})
+    </insert>
+    <!--删除组件信息-->
+    <delete id="deleteComponent" parameterType="int">
+        delete from cms_component where id=#{id}
+    </delete>
+    <!--更新组件-->
+    <update id="updateComponent" parameterType="com.xlauncher.entity.Component">
+        update cms_component
+        <set>
+            <if test="componentIp !=null and componentIp !='' ">
+                component_ip=#{componentIp},
+            </if>
+            <if test="componentPort !=null and componentPort !='' ">
+                component_port=#{componentPort},
+            </if>
+            <if test="componentDescription !=null and componentDescription !='' ">
+                component_description=#{componentDescription},
+            </if>
+            <if test="componentConfiguration !=null">
+                component_configuration=#{componentConfiguration,javaType=Map,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <!--获取组件，分页前端展现使用-->
+    <select id="listAllComponentByNum" resultMap="componentResultMap">
+        select * from cms_component
+        <where>
+            <if test="componentName != 'undefined' and componentName != ''">
+                component_name LIKE concat('%',#{componentName},'%')
+            </if>
+        </where>
+        limit #{number},10
+    </select>
+    <!--获取表的页数-->
+    <select id="countPage"  parameterType="String" resultType="int">
+        SELECT count(*) from cms_component
+        <where>
+            <if test="componentName != 'undefined' and componentName != ''">
+                component_name LIKE concat('%',#{componentName},'%')
+            </if>
+        </where>
+    </select>
+    <!--不分页获取组件，程序内部同步服务时使用-->
+    <select id="listComponent" resultMap="componentResultMap">
+        select * from cms_component
+    </select>
+
+    <resultMap id="componentResultMap" type="com.xlauncher.entity.Component">
+        <id property="id" column="id"/>
+        <result property="componentAbbr" column="component_abbr"/>
+        <result property="componentName" column="component_name"/>
+        <result property="componentIp" column="component_ip"/>
+        <result property="componentPort" column="component_port"/>
+        <result property="componentDescription" column="component_description"/>
+        <result typeHandler="com.xlauncher.util.MapTypeHandler" property="componentConfiguration" javaType="java.util.Map" column="component_configuration" jdbcType="VARCHAR"/>
+    </resultMap>
+</mapper>

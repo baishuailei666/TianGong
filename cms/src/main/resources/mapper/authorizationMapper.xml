@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.AuthorizationDao">
+    <insert id="insertAuthorization">
+        INSERT INTO cms_authorization(authorize_role_id,authorize_permission_id) VALUES (#{roleId},#{PermissionId})
+    </insert>
+
+    <delete id="deleteAuthorization" parameterType="int">
+        DELETE FROM cms_authorization WHERE authorize_id=#{authorizeId}
+    </delete>
+
+    <select id="listAuthorization" parameterType="int" resultType="Integer">
+        SELECT authorize_permission_id FROM cms_authorization WHERE authorize_role_id=#{roleId};
+    </select>
+
+    <delete id="deleteAuthorizationByRole" parameterType="int">
+        DELETE FROM cms_authorization WHERE authorize_role_id=#{roleId}
+    </delete>
+    
+</mapper>

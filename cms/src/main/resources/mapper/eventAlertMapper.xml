@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.EventAlertDao">
+
+    <!--获取未复核事件的行数-->
+    <select id="pageNotCheckCount" resultType="int">
+        SELECT count(*) from cms_event_alert
+        WHERE DATE_FORMAT(event_start_time, '%H:%i:%S') BETWEEN #{startTime} AND #{endTime}
+        AND event_check="未复核"
+            <if test="upStartTime != 'undefined' and upStartTime != '' ">
+                AND event_start_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+                AND event_start_time &lt;= #{lowStartTime}
+            </if>
+            <if test="typeDescription != 'undefined' and typeDescription != '' ">
+                AND type_description =#{typeDescription}
+            </if>
+            <if test="channelLocation != 'undefined' and channelLocation != '' ">
+                AND channel_location LIKE concat('%',#{channelLocation},'%')
+            </if>
+            <if test="channelHandler != 'undefined' and channelHandler != '' ">
+                AND channel_handler LIKE concat('%',#{channelHandler},'%')
+            </if>
+            <if test="channelOrg != 'undefined' and channelOrg != '' ">
+                AND channel_org LIKE concat('%',#{channelOrg},'%')
+            </if>
+    </select>
+    <!--条件查询未复核事件且提供分页显示-->
+    <select id="listNotCheckAlert" resultMap="alertResultMap">
+        SELECT * from cms_event_alert
+        WHERE DATE_FORMAT(event_start_time, '%H:%i:%S') BETWEEN #{startTime} AND #{endTime}
+        AND event_check="未复核"
+        <if test="upStartTime != 'undefined' and upStartTime != '' ">
+            AND event_start_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+            AND event_start_time &lt;= #{lowStartTime}
+        </if>
+        <if test="typeDescription != 'undefined' and typeDescription != '' ">
+            AND type_description =#{typeDescription}
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != '' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler != '' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelOrg != 'undefined' and channelOrg != '' ">
+            AND channel_org LIKE concat('%',#{channelOrg},'%')
+        </if>
+        limit #{number},10
+    </select>
+
+    <!--用户关心的未复核事件编号存放在临时表-->
+    <insert id="addEventIdTemp" parameterType="int">
+        INSERT INTO cms_event_temp(event_id) VALUES (#{eventId}) on duplicate key update event_id = event_id
+    </insert>
+
+    <!--条件查询用户关心的未复核事件且提供分页显示-->
+    <select id="listCareNotCheckAlert" resultMap="alertResultMap">
+        SELECT * from cms_event_alert, cms_event_temp
+        WHERE event_check="未复核" AND cms_event_alert.event_id=cms_event_temp.event_id
+        <if test="upStartTime != 'undefined' and upStartTime != '' ">
+            AND event_start_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+            AND event_start_time &lt;= #{lowStartTime}
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != '' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler != '' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelOrg != 'undefined' and channelOrg != '' ">
+            AND channel_org LIKE concat('%',#{channelOrg},'%')
+        </if>
+        ORDER BY event_start_time DESC limit #{number},10
+    </select>
+
+    <!--条件查询未复核事件并导出-->
+    <select id="listNotCheckAlertForExcel" resultMap="alertResultMap">
+        SELECT * from cms_event_alert
+        WHERE event_check="未复核"
+        <if test="upStartTime != 'undefined' and upStartTime != '' ">
+            AND event_start_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+            AND event_start_time &lt;= #{lowStartTime}
+        </if>
+        <if test="typeDescription != 'undefined' and typeDescription != '' ">
+            AND type_description LIKE concat('%',#{typeDescription},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != '' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler != '' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelOrg != 'undefined' and channelOrg != '' ">
+            AND channel_org LIKE concat('%',#{channelOrg},'%')
+        </if>
+    </select>
+    <!--获取已复核事件的行数-->
+    <select id="pageCheckCount" resultType="int">
+        SELECT count(*) from cms_event_alert
+        WHERE event_check="已复核"
+            <if test="upStartTime != 'undefined' and upStartTime != '' ">
+                AND event_start_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+                AND event_start_time &lt;= #{lowStartTime}
+            </if>
+            <if test="upCheckStartTime != 'undefined' and upCheckStartTime != '' ">
+                AND event_end_time &gt;= #{upCheckStartTime}
+            </if>
+            <if test="lowCheckStartTime != 'undefined' and lowCheckStartTime != '' ">
+                AND event_end_time &lt;= #{lowCheckStartTime}
+            </if>
+            <if test="typeDescription != 'undefined' and typeDescription != '' ">
+                AND type_description LIKE concat('%',#{typeDescription},'%')
+            </if>
+            <if test="typeStatus != 'undefined' and typeStatus != '' ">
+                AND type_status LIKE concat('%',#{typeStatus},'%')
+            </if>
+            <if test="channelLocation != 'undefined' and channelLocation != '' ">
+                AND channel_location LIKE concat('%',#{channelLocation},'%')
+            </if>
+            <if test="channelHandler != 'undefined' and channelHandler != '' ">
+                AND channel_handler LIKE concat('%',#{channelHandler},'%')
+            </if>
+            <if test="channelOrg != 'undefined' and channelOrg != '' ">
+                AND channel_org LIKE concat('%',#{channelOrg},'%')
+            </if>
+            <if test="eventReviewer != 'undefined' and eventReviewer != '' ">
+                AND event_reviewer LIKE concat('%',#{eventReviewer},'%')
+            </if>
+            <if test="typeRectify != 'undefined' and typeRectify != '' ">
+                AND type_rectify LIKE concat('%',#{typeRectify},'%')
+            </if>
+    </select>
+    <!--条件查询已复核事件且提供分页显示-->
+    <select id="listCheckAlert" resultMap="alertResultMap">
+        SELECT * from cms_event_alert
+        WHERE event_check="已复核"
+        <if test="upStartTime != 'undefined' and upStartTime != '' ">
+            AND event_start_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+            AND event_start_time &lt;= #{lowStartTime}
+        </if>
+        <if test="upCheckStartTime != 'undefined' and upCheckStartTime != '' ">
+            AND event_end_time &gt;= #{upCheckStartTime}
+        </if>
+        <if test="lowCheckStartTime != 'undefined' and lowCheckStartTime != '' ">
+            AND event_end_time &lt;= #{lowCheckStartTime}
+        </if>
+        <if test="typeDescription != 'undefined' and typeDescription != '' ">
+            AND type_description LIKE concat('%',#{typeDescription},'%')
+        </if>
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status LIKE concat('%',#{typeStatus},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != '' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler != '' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelOrg != 'undefined' and channelOrg != '' ">
+            AND channel_org LIKE concat('%',#{channelOrg},'%')
+        </if>
+        <if test="eventReviewer != 'undefined' and eventReviewer != '' ">
+            AND event_reviewer LIKE concat('%',#{eventReviewer},'%')
+        </if>
+        <if test="typeRectify != 'undefined' and typeRectify != '' ">
+            AND type_rectify LIKE concat('%',#{typeRectify},'%')
+        </if>
+        limit #{number},10
+    </select>
+    <!--条件查询已复核事件并导出-->
+    <select id="listCheckAlertForExcel" resultMap="alertResultMap">
+        SELECT * from cms_event_alert
+        WHERE event_check="已复核"
+        <if test="upStartTime != 'undefined' and upStartTime != '' ">
+            AND event_start_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime != 'undefined' and lowStartTime != '' ">
+            AND event_start_time &lt;= #{lowStartTime}
+        </if>
+        <if test="upCheckStartTime != 'undefined' and upCheckStartTime != '' ">
+            AND event_end_time &gt;= #{upCheckStartTime}
+        </if>
+        <if test="lowCheckStartTime != 'undefined' and lowCheckStartTime != '' ">
+            AND event_end_time &lt;= #{lowCheckStartTime}
+        </if>
+        <if test="typeDescription != 'undefined' and typeDescription != '' ">
+            AND type_description LIKE concat('%',#{typeDescription},'%')
+        </if>
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status LIKE concat('%',#{typeStatus},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != '' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler != '' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelOrg != 'undefined' and channelOrg != '' ">
+            AND channel_org LIKE concat('%',#{channelOrg},'%')
+        </if>
+        <if test="eventReviewer != 'undefined' and eventReviewer != '' ">
+            AND event_reviewer LIKE concat('%',#{eventReviewer},'%')
+        </if>
+        <if test="typeRectify != 'undefined' and typeRectify != '' ">
+            AND type_rectify LIKE concat('%',#{typeRectify},'%')
+        </if>
+    </select>
+
+    <!--接收ES的告警事件-->
+    <insert id="insertAlert" parameterType="com.xlauncher.entity.EventAlert">
+        insert into cms_event_alert(event_id, channel_id, channel_name, event_start_time, type_description, event_source
+        , channel_location, channel_handler, channel_handler_phone, channel_longitude, channel_latitude
+        , channel_grid_id, channel_org)
+        SELECT #{eventId},#{channelId},#{channelName},#{eventStartTime},#{typeDescription},#{eventSource}
+        ,channel_location,channel_handler,channel_handler_phone,channel_longitude,channel_latitude,channel_grid_id,org_name
+        FROM cms_channel, cms_device, cms_organization WHERE channel_id=#{channelId} AND device_org_id=org_id AND device_id=channel_source_id;
+    </insert>
+    <!--更改处理状态-->
+    <update id="updateAlert" parameterType="com.xlauncher.entity.EventAlert">
+        update cms_event_alert SET event_status="已处理", event_end_time =#{eventEndTime} where event_id=#{eventId}
+    </update>
+    <!-- 调整告警事件复核状态 -->
+    <update id="updateEventCheck" parameterType="com.xlauncher.entity.EventAlert">
+        update cms_event_alert
+        <set>
+            <if test="typeStatus != null and typeStatus != '' ">
+                type_status=#{typeStatus},
+            </if>
+            <if test="typeRectify != null and typeRectify != '' ">
+                type_rectify=#{typeRectify},
+            </if>
+            <if test="eventCheck != null and eventCheck != '' ">
+                event_check=#{eventCheck},
+            </if>
+            <if test="eventEndTime != null and eventEndTime != '' ">
+                event_end_time=#{eventEndTime},
+            </if>
+            <if test="eventReviewer != null and eventReviewer != '' ">
+                event_reviewer=#{eventReviewer}
+            </if>
+        </set>
+        where event_id=#{eventId}
+    </update>
+    <!--获取所有channelId-->
+    <select id="overview" resultType="String">
+        SELECT DISTINCT channel_id FROM cms_event_alert WHERE event_check='未复核';
+    </select>
+
+    <!-- 根据指定的告警事件编号获取图片的资源信息，以java.sql.Blob形式返回 -->
+    <select id="getImgData" parameterType="int" resultMap="alertResultMap">
+        SELECT event_data from cms_event_alert WHERE event_id=#{eventId}
+    </select>
+    <!-- 根据eventId获取告警事件-->
+    <select id="getAlertByEventId" parameterType="int" resultMap="alertResultMap">
+        SELECT * from cms_event_alert WHERE event_id=#{eventId}
+    </select>
+
+    <!-- 根据指定的告警事件编号将图片资源信息存入数据库 -->
+    <update id="updateImgData" parameterType="com.xlauncher.entity.EventAlert">
+        UPDATE cms_event_alert SET event_data=#{eventData} WHERE event_id=#{eventId}
+    </update>
+
+    <!-- 告警事件监控中心-->
+    <select id="getCheckTypeStatusCount" resultType="int">
+        SELECT count(*) from cms_event_alert WHERE event_check="已复核"
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status=#{typeStatus}
+        </if>
+    </select>
+    <!--按照年 季 月 周查询已复核的告警数量-->
+    <select id="getCheckTypeStatusCountWeek" resultType="int">
+        SELECT count(*) from cms_event_alert WHERE event_check="已复核"
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status=#{typeStatus}
+        </if>
+        AND DATE_SUB(CURDATE(), INTERVAL #{num} DAY) &lt; date(event_start_time)
+    </select>
+    <select id="getCheckTypeStatusCountMonth" resultType="int">
+        SELECT count(*) from cms_event_alert WHERE event_check="已复核"
+        AND DATE_SUB(CURDATE(), INTERVAL #{num} DAY) &lt; date(event_start_time)
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status=#{typeStatus}
+        </if>
+    </select>
+    <select id="getCheckTypeStatusCountQuarter" resultType="int">
+        SELECT count(*) from cms_event_alert WHERE event_check="已复核"
+        AND PERIOD_DIFF( date_format( now() , '%Y%m' ) , date_format( event_start_time, '%Y%m' ) ) =#{num}
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status=#{typeStatus}
+        </if>
+    </select>
+    <!-- PERIOD_DIFF(P1,P2)函数返回在时期P1和P2之间月数，P1和P2应该以格式YYMM或YYYYMM。注意，时期参数P1和P2不是日期值。-->
+    <select id="getCheckTypeStatusCountYear" resultType="int">
+        SELECT count(*) from cms_event_alert WHERE event_check="已复核"
+        AND PERIOD_DIFF( date_format( now() , '%Y%m' ) , date_format( event_start_time, '%Y%m' ) ) =#{num}
+        <if test="typeStatus != 'undefined' and typeStatus != '' ">
+            AND type_status=#{typeStatus}
+        </if>
+    </select>
+
+    <select id="countByChannel" resultType="int">
+        SELECT count(*) FROM cms_event_alert WHERE channel_id=#{channelId};
+    </select>
+
+    <!-- 得到告警类型数量-->
+    <select id="getTypeDescriptionCount" resultType="int">
+        select count(*) from cms_event_alert
+        WHERE DATE_FORMAT(event_start_time, '%H:%i:%S') BETWEEN #{startTime} AND #{endTime}
+        <if test="typeDescription != 'undefined' and typeDescription != '' ">
+            AND type_description=#{typeDescription}
+        </if>
+    </select>
+
+    <!-- 未复核告警事件总数-->
+    <select id="getNotCheckCount" resultType="int">
+        SELECT count(*) from cms_event_alert WHERE event_check="未复核"
+    </select>
+    <!-- 最新5条未复核告警事件-->
+    <select id="getNotCheckEvent" resultMap="alertResultMap">
+        SELECT event_id, channel_location, type_description, event_start_time from cms_event_alert
+        WHERE DATE_FORMAT(event_start_time, '%H:%i:%S') BETWEEN #{startTime} AND #{endTime}
+        AND event_check="未复核"
+        AND type_description =#{typeDescription}
+        ORDER BY event_start_time DESC limit 5
+    </select>
+
+    <resultMap id="channelIdResultMap" type="com.xlauncher.entity.Channel">
+        <id property="channelId" column="channel_id"/>
+    </resultMap>
+    <resultMap id="alertResultMap" type="com.xlauncher.entity.EventAlert">
+        <id property="eventId" column="event_id"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="eventStartTime" column="event_start_time"/>
+        <result property="typeDescription" column="type_description"/>
+        <result property="typeStatus" column="type_status"/>
+        <result property="typeRectify" column="type_rectify"/>
+        <result property="eventSource" column="event_source"/>
+        <result property="eventStatus" column="event_status"/>
+        <result property="eventEndTime" column="event_end_time"/>
+        <result property="channelHandler" column="channel_handler"/>
+        <result property="channelHandlerPhone" column="channel_handler_phone"/>
+        <result property="channelLongitude" column="channel_longitude"/>
+        <result property="channelLatitude" column="channel_latitude"/>
+        <result property="channelLocation" column="channel_location"/>
+        <result property="channelOrg" column="channel_org"/>
+        <result property="channelGridId" column="channel_grid_id"/>
+        <result property="eventData" column="event_data" jdbcType="BLOB" javaType="[B" typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
+        <result property="eventCheck" column="event_check"/>
+        <result property="eventEndTime" column="event_end_time"/>
+        <result property="eventReviewer" column="event_reviewer"/>
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.AlertLogDao">
+
+    <!--条件查询报警日志并导出-->
+    <select id="getAlertLogForExcel" resultMap="alertLogRM" resultType="com.xlauncher.entity.AlertLog">
+        select * from cms_alert_log
+        <where>
+            <if test="upStartTime!='undefined' and upStartTime!='' ">
+                AND alert_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+                AND alert_time &lt;= #{lowStartTime}
+            </if>
+            <if test="alertPriority != 'undefined' and alertPriority !='' ">
+                AND alert_priority LIKE concat('%',#{alertPriority},'%')
+            </if>
+            <if test="alertFileName != 'undefined' and alertFileName !='' ">
+                AND alert_file_name LIKE concat('%',#{alertFileName},'%')
+            </if>
+        </where>
+    </select>
+    <!--条件查询分页获取报警日志-->
+    <select id="getAlertLog" resultMap="alertLogRM" resultType="com.xlauncher.entity.AlertLog">
+        select * from cms_alert_log
+        <where>
+            <if test="upStartTime!='undefined' and upStartTime!='' ">
+                AND alert_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+                AND alert_time &lt;= #{lowStartTime}
+            </if>
+            <if test="alertPriority != 'undefined' and alertPriority !='' ">
+                AND alert_priority LIKE concat('%',#{alertPriority},'%')
+            </if>
+            <if test="alertFileName != 'undefined' and alertFileName !='' ">
+                AND alert_file_name LIKE concat('%',#{alertFileName},'%')
+            </if>
+        </where>
+        limit #{number},10
+    </select>
+    <!--分页数-->
+    <select id="countPage" resultType="int">
+        SELECT count(*) from cms_alert_log
+        <where>
+            <if test="upStartTime != 'undefined' and upStartTime!='' ">
+                AND alert_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime != 'undefined' and lowStartTime!='' ">
+                AND alert_time &lt;= #{lowStartTime}
+            </if>
+            <if test="alertPriority != 'undefined' and alertPriority !='' ">
+                AND alert_priority LIKE concat('%',#{alertPriority},'%')
+            </if>
+            <if test="alertFileName != 'undefined' and alertFileName !='' ">
+                AND alert_file_name LIKE concat('%',#{alertFileName},'%')
+            </if>
+        </where>
+    </select>
+    <!--获取所有的filename-->
+    <select id="listFileName" resultType="String">
+        SELECT DISTINCT alert_file_name FROM cms_alert_log;
+    </select>
+    <!--根据id获取报警日志详情，后期详情页使用-->
+    <select id="getAlertLogById"  parameterType="int" resultMap="alertLogRM" resultType="com.xlauncher.entity.AlertLog">
+        select * from cms_alert_log WHERE id=#{id}
+    </select>
+    <!--添加报警日志信息-->
+    <insert id="insertAlertLog" parameterType="com.xlauncher.entity.AlertLog" >
+        insert into cms_alert_log(alert_priority, alert_time, alert_timespan, alert_thread
+        , alert_line_num, alert_file_name, alert_class_name, alert_method_name, alert_message, alert_type)
+        values(#{alertPriority},#{alertTime},#{alertTimeSpan},#{alertThread}
+        ,#{alertLineNum},#{alertFileName},#{alertClassName},#{alertMethodName},#{alertMessage},#{alertType})
+    </insert>
+    <resultMap id="alertLogRM" type="com.xlauncher.entity.AlertLog">
+        <id property="id" column="id" javaType="int" jdbcType="INTEGER"/>
+        <result property="alertPriority" column="alert_priority" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertTime" column="alert_time" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertTimeSpan" column="alert_timespan" javaType="int" jdbcType="INTEGER"/>
+        <result property="alertThread" column="alert_thread" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertLineNum" column="alert_line_num" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertFileName" column="alert_file_name" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertClassName" column="alert_class_name" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertMethodName" column="alert_method_name" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertMessage" column="alert_message" javaType="String" jdbcType="VARCHAR"/>
+        <result property="alertType" column="alert_type" javaType="String" jdbcType="VARCHAR"/>
+    </resultMap>
+</mapper>

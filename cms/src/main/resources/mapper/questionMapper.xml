@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.QuestionDao">
+    <insert id="insertQuestion" parameterType="com.xlauncher.entity.Question">
+        INSERT INTO cms_question(question_user_id, question_name, question_answer) VALUES (#{questionUserId},#{questionName},#{questionAnswer});
+    </insert>
+
+    <update id="updateQuestion" parameterType="com.xlauncher.entity.Question">
+        UPDATE cms_question SET question_answer=#{questionAnswer},question_name = #{questionName} WHERE question_id=#{questionId}
+    </update>
+
+    <delete id="deleteQuestionByUser" parameterType="int">
+        DELETE FROM cms_question WHERE question_user_id=#{questionUserId};
+    </delete>
+
+    <delete id="deleteQuestion" parameterType="int">
+        DELETE FROM cms_question WHERE question_id=#{questionId};
+    </delete>
+
+    <select id="listQuestion" parameterType="int" resultMap="questionRM">
+        SELECT * from cms_question WHERE question_user_id=#{questionUserId};
+    </select>
+
+    <select id="getQuestionById" parameterType="int" resultMap="questionRM">
+        SELECT * from cms_question WHERE question_id=#{questionId};
+    </select>
+
+    <resultMap id="questionRM" type="com.xlauncher.entity.Question">
+        <id property="questionId" column="question_id"/>
+        <result property="questionUserId" column="question_user_id"/>
+        <result property="questionName" column="question_name"/>
+        <result property="questionAnswer" column="question_answer"/>
+    </resultMap>
+</mapper>

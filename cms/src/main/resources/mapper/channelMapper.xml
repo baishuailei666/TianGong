@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.ChannelDao">
+    <!--添加一个通道-->
+    <insert id="insertChannel" parameterType="com.xlauncher.entity.Channel">
+        insert into cms_channel(channel_id, channel_name, channel_source_id, channel_number, channel_grid_id
+        , channel_location, channel_longitude, channel_latitude, channel_handler, channel_handler_phone, channel_create_time, channel_model, channel_vendor)
+        VALUES (#{channelId},#{channelName},#{channelSourceId},#{channelNumber},#{channelGridId},#{channelLocation}
+        ,#{channelLongitude},#{channelLatitude},#{channelHandler},#{channelHandlerPhone},#{channelCreateTime},#{channelModel},#{channelVendor})
+    </insert>
+    <!--删除一个通道-->
+    <update id="deleteChannel" parameterType="String">
+        DELETE FROM cms_channel where channel_id=#{channelId}
+    </update>
+    <!--激活通道activeDevice-->
+    <update id="activeChannel" parameterType="String">
+        UPDATE cms_channel SET channel_status = "在用" where channel_id=#{channelId}
+    </update>
+    <!--停用通道activeDevice-->
+    <update id="disableChannel" parameterType="String">
+        UPDATE cms_channel SET channel_status = "停用" where channel_id=#{channelId}
+    </update>
+    <!--激活设备以及对应通道activeDeviceChannel-->
+    <update id="activeDeviceChannel" parameterType="String">
+        UPDATE cms_channel SET channel_status = "在用" where channel_source_id=#{deviceId}
+    </update>
+    <!--停用设备以及对应通道disableDeviceChannel-->
+    <update id="disableDeviceChannel" parameterType="String">
+        UPDATE cms_channel SET channel_status = "停用" where channel_source_id=#{deviceId}
+    </update>
+    <!--删除一个设备的同时删除对应的通道-->
+    <update id="deleteChannelByDeviceId" parameterType="String">
+        DELETE FROM cms_channel WHERE channel_source_id=#{deviceId}
+    </update>
+    <!--更新设备信息-->
+    <update id="updateChannel" parameterType="com.xlauncher.entity.Channel">
+        update cms_channel
+        <set>
+            <if test="channelName != null and channelName != ''">
+                channel_name=#{channelName},
+            </if>
+            <if test="channelSourceId != null and channelSourceId != ''">
+                channel_source_id=#{channelSourceId},
+            </if>
+            <if test="channelNumber != null and channelNumber != ''">
+                channel_number=#{channelNumber},
+            </if>
+            <if test="channelGridId != null and channelGridId != ''">
+                channel_grid_id=#{channelGridId},
+            </if>
+            <if test="channelLocation != null and channelLocation != ''">
+                channel_location=#{channelLocation},
+            </if>
+            <if test="channelLongitude != null and channelLongitude != ''">
+                channel_longitude=#{channelLongitude},
+            </if>
+            <if test="channelLatitude != null and channelLatitude != ''">
+                channel_latitude=#{channelLatitude},
+            </if>
+            <if test="channelHandler != null and channelHandler != ''">
+                channel_handler=#{channelHandler},
+            </if>
+            <if test="channelHandlerPhone != null and channelHandlerPhone != ''">
+                channel_handler_phone=#{channelHandlerPhone},
+            </if>
+            <if test="channelUpdateTime != null and channelUpdateTime != ''">
+                channel_update_time=#{channelUpdateTime},
+            </if>
+            <if test="channelModel != null and channelModel != ''">
+                channel_model=#{channelModel},
+            </if>
+            <if test="channelVendor != null and channelVendor != ''">
+                channel_vendor=#{channelVendor}
+            </if>
+        </set>
+        where channel_id=#{channelId}
+    </update>
+    <!--DIM反馈更新设备状态-->
+    <update id="updateChannelStatus" parameterType="com.xlauncher.entity.Channel">
+        update cms_channel set channel_fault_code=#{channelFaultCode}, channel_fault=#{channelFault}, channel_fault_time=#{channelFaultTime}, channel_pod_status=#{channelPodStatus} where channel_id=#{channelId}
+    </update>
+    <!-- 通道告警getRuntimeChannel -->
+    <select id="getRuntimeChannel" resultMap="channelResultMap">
+        SELECT * FROM cms_channel, cms_device
+        WHERE channel_source_id = device_id
+        AND channel_fault_code != 0
+        <if test="upStartTime!='undefined' and upStartTime!='' ">
+            AND channel_fault_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+            AND channel_fault_time &lt;= #{lowStartTime}
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler!='' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelName != 'undefined' and channelName!='' ">
+            AND channel_name LIKE concat('%',#{channelName},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation!='' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        limit #{number}, 10
+    </select>
+    <!-- 通道告警countRuntimeChannel -->
+    <select id="countRuntimeChannel" resultType="int">
+        SELECT count(*) FROM cms_channel, cms_device
+        WHERE channel_source_id = device_id
+        AND channel_fault_code != 0
+        <if test="upStartTime!='undefined' and upStartTime!='' ">
+            AND channel_fault_time &gt;= #{upStartTime}
+        </if>
+        <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+            AND channel_fault_time &lt;= #{lowStartTime}
+        </if>
+        <if test="channelHandler != 'undefined' and channelHandler!='' ">
+            AND channel_handler LIKE concat('%',#{channelHandler},'%')
+        </if>
+        <if test="channelName != 'undefined' and channelName!='' ">
+            AND channel_name LIKE concat('%',#{channelName},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation!='' ">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+    </select>
+
+    <!--根据通道编号查询通道信息-->
+    <select id="getChannelByChannelId" parameterType="String" resultMap="channelResultMap">
+        select * from cms_channel WHERE channel_id=#{channelId}
+    </select>
+    <!--根据通道资源编号查询通道信息-->
+    <select id="getChannelBySourceId" parameterType="String" resultMap="channelResultMap">
+        select * from cms_channel WHERE channel_source_id=#{sourceId}
+    </select>
+
+    <!--通道名称查重-->
+    <select id="countChannelName" parameterType="String" resultType="int">
+        SELECT count(*) FROM cms_channel WHERE channel_name=#{channelName} AND channel_status!='删除'
+        <if test="channelId != 'undefined' and channelId!='' ">
+            AND channel_id = #{channelId}
+        </if>
+    </select>
+    <!--通道序号查重-->
+    <select id="countChannelNumber" parameterType="int" resultType="int">
+        SELECT count(*) FROM cms_channel WHERE channel_number=#{channelNumber} AND channel_status!='删除'
+        <if test="channelId != 'undefined' and channelId!='' ">
+            AND channel_id = #{channelId}
+        </if>
+    </select>
+    <!--通道序号查重 根据deviceId查询所属channelId-->
+    <select id="listChannelId" parameterType="String" resultType="String">
+        SELECT channel_id FROM cms_channel WHERE channel_source_id=#{channelSourceId} AND channel_status!='删除'
+    </select>
+    <!--用于判断通道经纬度是否存在-->
+    <select id="getLongitudeByLatitude" parameterType="String" resultType="String">
+       select channel_longitude from cms_channel where channel_latitude=#{channelLatitude} AND channel_status!='删除'
+        <if test="channelId != 'undefined' and channelId!='' ">
+            AND channel_id != #{channelId}
+        </if>
+</select>
+    <!--分页展现所有通道信息-->
+    <select id="listChannel" parameterType="String" resultMap="channelResultMap">
+        select * from cms_channel  WHERE channel_status!="删除"
+        <if test="channelName != 'undefined' and channelName != '' ">
+            AND channel_name LIKE concat('%',#{channelName},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != ''">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelStatus != 'undefined' and channelStatus != ''">
+            AND channel_status LIKE concat('%',#{channelStatus},'%')
+        </if>
+        <if test="channelSourceId != 'undefined' and channelSourceId != '' ">
+            AND channel_source_id=#{channelSourceId}
+        </if>
+        limit #{number},10
+    </select>
+    <!--获取表的行数-->
+    <select id="countPageChannel" parameterType="String" resultType="int">
+        SELECT count(*) from cms_channel  WHERE channel_status!="删除"
+        <if test="channelName != 'undefined' and channelName != '' ">
+            AND channel_name LIKE concat('%',#{channelName},'%')
+        </if>
+        <if test="channelLocation != 'undefined' and channelLocation != ''">
+            AND channel_location LIKE concat('%',#{channelLocation},'%')
+        </if>
+        <if test="channelStatus != 'undefined' and channelStatus != ''">
+            AND channel_status LIKE concat('%',#{channelStatus},'%')
+        </if>
+        <if test="channelSourceId != 'undefined' and channelSourceId != '' ">
+            AND channel_source_id=#{channelSourceId}
+        </if>
+    </select>
+
+    <!--设备告警监控中心-->
+    <!--显示最新5条的告警信息-->
+    <select id="getChannelFault" resultMap="channelFaultR">
+        SELECT channel_id, channel_source_id, channel_name, channel_location, channel_fault, channel_fault_time FROM cms_channel WHERE channel_status="在用"
+        AND channel_fault_code != 0
+        ORDER BY channel_fault_time DESC limit 5
+    </select>
+    <!--饼状图、获取设备告警类型数量-->
+    <select id="getChannelFaultType" resultType="String">
+        SELECT DISTINCT channel_fault FROM cms_channel
+    </select>
+    <select id="getChannelFaultCount" parameterType="String" resultType="int">
+        SELECT count(channel_fault) FROM cms_channel
+         <where>
+             <if test="channelFault != 'undefined' and channelFault != ''" >
+                 channel_fault=#{channelFault}
+             </if>
+         </where>
+    </select>
+
+    <!--获取所有可用状态的摄像头列表-->
+    <select id="overview" resultMap="channelLocationResultMap">
+        SELECT channel_id,channel_name,channel_longitude,channel_latitude FROM cms_channel WHERE channel_status="在用"
+    </select>
+    <!--获取所有可用状态的摄像头列表-->
+    <select id="overviewStatus" resultMap="channelLocationResultMapC">
+        SELECT channel_id,channel_name,channel_longitude,channel_latitude,channel_fault FROM cms_channel WHERE channel_status="在用"
+    </select>
+    <!--查询异常的通道-->
+    <select id="overviewError" resultType="String">
+        SELECT channel_id FROM  cms_channel WHERE cms_channel.channel_fault &lt;&gt; '正常运行' AND channel_status="在用"
+    </select>
+    <!--查询该通道是否已经存在-->
+    <select id="channelExistence" parameterType="String" resultType="int">
+        SELECT count(*) from cms_channel WHERE channel_id=#{channelId}
+    </select>
+    <!--查询某设备下的通道序号是否冲突-->
+    <select id="channelConflict" resultType="int">
+        SELECT count(*) FROM cms_channel WHERE channel_id=#{channelId} AND channel_number=#{channelNumber} AND channel_status!="删除";
+    </select>
+
+    <resultMap id="channelFaultR" type="com.xlauncher.entity.Channel">
+        <result property="channelId" column="channel_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="channelLocation" column="channel_location"/>
+        <result property="channelFault" column="channel_fault"/>
+        <result property="channelFaultTime" column="channel_fault_time"/>
+        <result property="channelSourceId" column="channel_source_id"/>
+    </resultMap>
+
+    <resultMap id="channelLocationResultMap" type="com.xlauncher.entity.Channel">
+        <id property="channelId" column="channel_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="channelLongitude" column="channel_longitude"/>
+        <result property="channelLatitude" column="channel_latitude"/>
+    </resultMap>
+
+    <resultMap id="channelLocationResultMapC" type="com.xlauncher.entity.Channel">
+        <id property="channelId" column="channel_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="channelLongitude" column="channel_longitude"/>
+        <result property="channelLatitude" column="channel_latitude"/>
+        <result property="channelFault" column="channel_fault"/>
+    </resultMap>
+
+    <resultMap id="channelResultMap" type="com.xlauncher.entity.Channel">
+        <id property="id" column="id"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="channelSourceId" column="channel_source_id"/>
+        <result property="channelNumber" column="channel_number"/>
+        <result property="channelGridId" column="channel_grid_id"/>
+        <result property="channelLocation" column="channel_location"/>
+        <result property="channelLongitude" column="channel_longitude"/>
+        <result property="channelLatitude" column="channel_latitude"/>
+        <result property="channelHandler" column="channel_handler"/>
+        <result property="channelHandlerPhone" column="channel_handler_phone"/>
+        <result property="channelPodStatus" column="channel_pod_status"/>
+        <result property="channelStatus" column="channel_status"/>
+        <result property="channelCreateTime" column="channel_create_time"/>
+        <result property="channelUpdateTime" column="channel_update_time"/>
+        <result property="channelFaultTime" column="channel_fault_time"/>
+        <result property="channelFaultCode" column="channel_fault_code"/>
+        <result property="channelFault" column="channel_fault"/>
+        <result property="channelModel" column="channel_model"/>
+        <result property="channelVendor" column="channel_vendor"/>
+        <result property="deviceName" column="device_name"/>
+    </resultMap>
+</mapper>

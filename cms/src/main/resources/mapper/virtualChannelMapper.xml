@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.VirtualChannelDao">
+    <!-- 根据channelSourceId查询得到所有通道对象-->
+    <select id="listVirtualChannelBySource" resultMap="virtualChannelResultMap">
+        select * from cms_virtual_channel
+        <where>
+            <if test="virtualChannelSourceId != 'undefined' and virtualChannelSourceId != '' ">
+                virtual_channel_source_id=#{virtualChannelSourceId}
+            </if>
+            <if test="channelStatus='' ">
+                AND virtual_channel_status!="删除"
+            </if>
+        </where>
+        ORDER BY virtual_channel_number limit #{number},3
+    </select>
+    <!--添加一个通道-->
+    <insert id="insertVirtualChannel" parameterType="com.xlauncher.entity.VirtualChannel">
+        insert into cms_virtual_channel(virtual_channel_id, virtual_channel_name, virtual_channel_source_id
+        , virtual_channel_number, virtual_channel_grid_id, virtual_channel_location, virtual_channel_longitude
+        , virtual_channel_latitude, virtual_channel_handler, virtual_channel_handler_phone, virtual_channel_create_time, virtual_channel_model, virtual_channel_vendor)
+        VALUES (#{virtualChannelId},#{virtualChannelName},#{virtualChannelSourceId},#{virtualChannelNumber}
+        ,#{virtualChannelGridId},#{virtualChannelLocation},#{virtualChannelLongitude},#{virtualChannelLatitude}
+        ,#{virtualChannelHandler},#{virtualChannelHandlerPhone},#{virtualChannelCreateTime},#{virtualChannelModel},#{virtualChannelVendor})
+    </insert>
+    <!--删除一个通道-->
+    <update id="deleteVirtualChannel" parameterType="String">
+        UPDATE cms_virtual_channel SET virtual_channel_status = "删除" where virtual_channel_id=#{virtualChannelId}
+    </update>
+    <!--删除一个设备的同时删除对应的通道-->
+    <update id="deleteVirtualChannelByVirtualDeviceId" parameterType="String">
+        UPDATE cms_virtual_channel SET virtual_channel_status = "删除" WHERE virtual_channel_source_id=#{virtualDeviceId}
+    </update>
+    <!--更新设备信息-->
+    <update id="updateVirtualChannel" parameterType="com.xlauncher.entity.VirtualChannel">
+        update cms_virtual_channel
+        <set>
+            <if test="virtualChannelName != null and virtualChannelName != ''">
+                virtual_channel_name=#{virtualChannelName},
+            </if>
+            <if test="virtualChannelSourceId != null and virtualChannelSourceId != ''">
+                virtual_channel_source_id=#{virtualChannelSourceId},
+            </if>
+            <if test="virtualChannelNumber != null and virtualChannelNumber != ''">
+                virtual_channel_number=#{virtualChannelNumber},
+            </if>
+            <if test="virtualChannelGridId != null and virtualChannelGridId != ''">
+                virtual_channel_grid_id=#{virtualChannelGridId},
+            </if>
+            <if test="virtualChannelLocation != null and virtualChannelLocation != ''">
+                virtual_channel_location=#{virtualChannelLocation},
+            </if>
+            <if test="virtualChannelLongitude != null and virtualChannelLongitude != ''">
+                virtual_channel_longitude=#{virtualChannelLongitude},
+            </if>
+            <if test="virtualChannelLatitude != null and virtualChannelLatitude != ''">
+                virtual_channel_latitude=#{virtualChannelLatitude},
+            </if>
+            <if test="virtualChannelHandler != null and virtualChannelHandler != ''">
+                virtual_channel_handler=#{virtualChannelHandler},
+            </if>
+            <if test="virtualChannelHandlerPhone != null and virtualChannelHandlerPhone != ''">
+                virtual_channel_handler_phone=#{virtualChannelHandlerPhone},
+            </if>
+            <if test="virtualChannelModel != null and virtualChannelModel != ''">
+                virtual_channel_model=#{virtualChannelModel},
+            </if>
+            <if test="virtualChannelVendor != null and virtualChannelVendor != ''">
+                virtual_channel_vendor=#{virtualChannelVendor},
+            </if>
+            <if test="virtualChannelUpdateTime != null and virtualChannelUpdateTime != ''">
+                virtual_channel_update_time=#{virtualChannelUpdateTime}
+            </if>
+        </set>
+        where virtual_channel_id=#{virtualChannelId}
+    </update>
+    <!--DIM反馈更新设备状态-->
+    <update id="updateVirtualChannelStatus" parameterType="com.xlauncher.entity.VirtualChannel">
+        update cms_virtual_channel
+        <set>
+            <if test="virtualChannelPodStatus != null and virtualChannelPodStatus != ''">
+                virtual_channel_pod_status=#{virtualChannelPodStatus},
+            </if>
+            <if test="virtualChannelStatus != null and virtualChannelStatus != ''">
+                virtual_channel_status=#{virtualChannelStatus}
+            </if>
+        </set>
+        where virtual_channel_id=#{virtualChannelId}
+    </update>
+    <!--分页展现摄像头信息-->
+    <select id="getVirtualChannelByVirtualChannelId" parameterType="String" resultMap="virtualChannelResultMap">
+        select * from cms_virtual_channel WHERE virtual_channel_id=#{virtualChannelId}
+    </select>
+    <!--分页展现摄像头信息-->
+    <select id="listVirtualChannel" parameterType="int" resultMap="virtualChannelResultMap">
+        select * from cms_virtual_channel WHERE virtual_channel_status!="删除" limit #{number},10
+    </select>
+    <!--获取表的行数-->
+    <select id="countPage" parameterType="String" resultType="int">
+        SELECT count(*) from cms_virtual_channel WHERE virtual_channel_status!="删除"
+        <if test="virtualChannelSourceId != 'undefined' and virtualChannelSourceId != '' ">
+            AND virtual_channel_source_id=#{virtualChannelSourceId}
+        </if>
+    </select>
+    <!--获取所有可用状态的摄像头列表-->
+    <select id="overview" resultMap="virtualChannelLocationResultMap">
+        SELECT virtual_channel_id,virtual_channel_name,virtual_channel_longitude,virtual_channel_latitude FROM cms_virtual_channel WHERE virtual_channel_status!="删除"
+    </select>
+    <!--查询该通道是否已经存在-->
+    <select id="virtualChannelExistence" parameterType="String" resultType="int">
+        SELECT count(*) from cms_virtual_channel WHERE virtual_channel_id=#{virtualChannelId}
+    </select>
+    <!--查询某设备下的通道序号是否冲突-->
+    <select id="virtualChannelConflict" resultType="int">
+        SELECT count(*) FROM cms_virtual_channel WHERE virtual_channel_id=#{virtualChannelId} AND virtual_channel_number=#{virtualChannelNumber} AND virtual_channel_status!="删除";
+    </select>
+    <!--获取某一虚拟设备支持的通道总数-->
+    <select id="virtualDeviceChannelCount" resultType="int">
+        SELECT cms_virtual_device.virtual_device_channel_count FROM cms_virtual_device WHERE virtual_device_id=#{virtualChannelSourceId}
+    </select>
+
+    <resultMap id="virtualChannelLocationResultMap" type="com.xlauncher.entity.VirtualChannel">
+        <id property="virtualChannelId" column="virtual_channel_id"/>
+        <result property="virtualChannelName" column="virtual_channel_name"/>
+        <result property="virtualChannelLongitude" column="virtual_channel_longitude"/>
+        <result property="virtualChannelLatitude" column="virtual_channel_latitude"/>
+    </resultMap>
+
+    <resultMap id="virtualChannelResultMap" type="com.xlauncher.entity.VirtualChannel">
+        <id property="id" column="id"/>
+        <result property="virtualChannelId" column="virtual_channel_id"/>
+        <result property="virtualChannelName" column="virtual_channel_name"/>
+        <result property="virtualChannelSourceId" column="virtual_channel_source_id"/>
+        <result property="virtualChannelNumber" column="virtual_channel_number"/>
+        <result property="virtualChannelGridId" column="virtual_channel_grid_id"/>
+        <result property="virtualChannelLocation" column="virtual_channel_location"/>
+        <result property="virtualChannelLongitude" column="virtual_channel_longitude"/>
+        <result property="virtualChannelLatitude" column="virtual_channel_latitude"/>
+        <result property="virtualChannelHandler" column="virtual_channel_handler"/>
+        <result property="virtualChannelHandlerPhone" column="virtual_channel_handler_phone"/>
+        <result property="virtualChannelPodStatus" column="virtual_channel_pod_status"/>
+        <result property="virtualChannelStatus" column="virtual_channel_status"/>
+        <result property="virtualChannelCreateTime" column="virtual_channel_create_time"/>
+        <result property="virtualChannelUpdateTime" column="virtual_channel_update_time"/>
+        <result property="virtualChannelFaultTime" column="virtual_channel_fault_time"/>
+        <result property="virtualChannelFaultCode" column="virtual_channel_fault_code"/>
+        <result property="virtualChannelFault" column="virtual_channel_fault"/>
+        <result property="virtualChannelModel" column="virtual_channel_model"/>
+        <result property="virtualChannelVendor" column="virtual_channel_vendor"/>
+    </resultMap>
+</mapper>

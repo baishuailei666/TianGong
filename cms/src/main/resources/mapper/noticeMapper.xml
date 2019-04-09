@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.NoticeDao">
+    <insert id="insertNotice" useGeneratedKeys="true" keyProperty="noticeId" parameterType="com.xlauncher.entity.Notice">
+        insert into cms_notice (notice_title, notice_create_time, notice_author, notice_count, notice_info_id) values (#{noticeTitle},#{noticeCreateTime},#{noticeAuthor},#{noticeCount},#{noticeInfoId});
+    </insert>
+    <delete id="deleteNotice" parameterType="int">
+        DELETE FROM cms_notice WHERE notice_id = #{noticeId}
+    </delete>
+    <delete id="deleteNoticeRole" parameterType="int">
+        DELETE FROM cms_notice_role WHERE cnr_notice_id=#{noticeId};
+    </delete>
+    <delete id="deleteInfo" parameterType="int">
+        DELETE  FROM  cms_info WHERE info_id=#{infoId};
+    </delete>
+    <select id="queryNotice" parameterType="int" resultMap="noticeResultMap">
+        SELECT * FROM cms_notice WHERE notice_id = #{noticeId}
+    </select>
+    <select id="queryNoticeDetail" parameterType="int"  resultType="String">
+        SELECT info_content FROM cms_info WHERE info_id = #{id};
+    </select>
+    <insert id="insertNoticeDetail" useGeneratedKeys="true" keyProperty="infoId" parameterType="com.xlauncher.entity.Info">
+        INSERT INTO cms_info (info_content) VALUES (#{infoContent})
+    </insert>
+    <insert id="insertNoticeRole">
+        INSERT into cms_notice_role(cnr_notice_id, cnr_role_id) VALUES (#{noticeId},#{roleId})
+    </insert>
+    <select id="queryNoticeRole" parameterType="int" resultType="int">
+        SELECT cnr_notice_id FROM cms_notice_role WHERE cnr_role_id = #{roleId}
+    </select>
+    <select id="infoCount" parameterType="int" resultType="int">
+        SELECT count(*) from cms_mail_receiver WHERE mail_info_id=#{infoId}
+    </select>
+    <select id="infoCountS" parameterType="int" resultType="int">
+        SELECT count(*) from cms_mail_sender WHERE mail_info_id=#{infoId}
+    </select>
+    <resultMap id="noticeResultMap" type="com.xlauncher.entity.Notice">
+        <id column="notice_id" property="noticeId"/>
+        <result column="notice_title" property="noticeTitle"/>
+        <result column="notice_create_time" property="noticeCreateTime"/>
+        <result column="notice_author" property="noticeAuthor"/>
+        <result column="notice_count" property="noticeCount"/>
+        <result column="notice_info_id" property="noticeInfoId"/>
+    </resultMap>
+</mapper>

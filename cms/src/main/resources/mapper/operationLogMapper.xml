@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.OperationLogDao">
+    <!--添加操作日志-->
+    <insert id="insertLog" parameterType="com.xlauncher.entity.OperationLog">
+        insert into cms_operation_log(operation_person, operation_time, operation_type
+        , operation_description, operation_module, operation_system_module, operation_category)
+        values (#{operationPerson},#{operationTime},#{operationType},#{operationDescription}
+        ,#{operationModule},#{operationSystemModule},#{operationCategory})
+    </insert>
+    <!--删除日志-->
+    <delete id="deleteLog" parameterType="int">
+        delete from cms_operation_log where id=#{id}
+    </delete>
+    <!--定时清空日志-->
+    <delete id="deleteLogFromTime" parameterType="String">
+        delete from cms_operation_log where operation_time &lt;= #{operationTime}
+    </delete>
+
+    <!-- 存储路径配置，日志持久化到本地服务器-->
+    <select id="logConfPathList" resultMap="opLogResultMap">
+        SELECT * FROM cms_operation_log WHERE operation_category = #{opCategory}
+    </select>
+
+    <!-- 根据编号查询用于查看运维操作日志详情-->
+    <select id="getOperationLogById" resultMap="opLogResultMap">
+        SELECT * FROM cms_operation_log WHERE operation_category = "运维" and id=#{id}
+    </select>
+    <!-- 根据编号查询用于查看运营操作日志详情-->
+    <select id="getOperatingLogById" resultMap="opLogResultMap">
+        SELECT * FROM cms_operation_log WHERE operation_category = "运营" and id=#{id}
+    </select>
+    <!-- 根据编号查询用于查看事件操作日志详情-->
+    <select id="getEventLogById" resultMap="opLogResultMap">
+        SELECT * FROM cms_operation_log WHERE operation_category = "事件" and id=#{id}
+    </select>
+    <!--条件查询日志并导出-->
+    <select id="listLogForExcel" resultMap="opLogResultMap">
+        SELECT * from cms_operation_log
+        <where>
+            <if test="upStartTime!='undefined' and upStartTime!='' ">
+                operation_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+                AND operation_time &lt;= #{lowStartTime}
+            </if>
+            <if test="opPerson!='undefined' and opPerson!='' ">
+                AND operation_person LIKE concat('%',#{opPerson},'%')
+            </if>
+            <if test="opType!='undefined' and opType!='' ">
+                AND operation_type LIKE concat('%',#{opType},'%')
+            </if>
+            <if test="opModule!='undefined' and opModule!='' ">
+                AND operation_module LIKE concat('%',#{opModule},'%')
+            </if>
+            <if test="opCategory!='undefined' and opCategory!='' ">
+                AND operation_category LIKE concat('%',#{opCategory},'%')
+            </if>
+            <if test="opSystemModule!='undefined' and opSystemModule!='' ">
+                AND operation_system_module LIKE concat('%',#{opSystemModule},'%')
+            </if>
+        </where>
+    </select>
+    <!--条件查询分页显示日志-->
+    <select id="listLog" resultMap="opLogResultMap">
+        SELECT * from cms_operation_log
+        <where>
+            <if test="upStartTime!='undefined' and upStartTime!='' ">
+                operation_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+                AND operation_time &lt;= #{lowStartTime}
+            </if>
+            <if test="opPerson!='undefined' and opPerson!='' ">
+                AND operation_person LIKE concat('%',#{opPerson},'%')
+            </if>
+            <if test="opType!='undefined' and opType!='' ">
+                AND operation_type LIKE concat('%',#{opType},'%')
+            </if>
+            <if test="opModule!='undefined' and opModule!='' ">
+                AND operation_module LIKE concat('%',#{opModule},'%')
+            </if>
+            <if test="opCategory!='undefined' and opCategory!='' ">
+                AND operation_category LIKE concat('%',#{opCategory},'%')
+            </if>
+            <if test="opSystemModule!='undefined' and opSystemModule!='' ">
+                AND operation_system_module LIKE concat('%',#{opSystemModule},'%')
+            </if>
+        </where>
+        ORDER BY operation_time desc limit #{number},10
+    </select>
+    <!--获取表的行数-->
+    <select id="countPage" resultType="int">
+        SELECT count(*) from cms_operation_log
+        <where>
+            <if test="upStartTime!='undefined' and upStartTime!='' ">
+                operation_time &gt;= #{upStartTime}
+            </if>
+            <if test="lowStartTime!='undefined' and lowStartTime!='' ">
+                AND operation_time &lt;= #{lowStartTime}
+            </if>
+            <if test="opPerson!='undefined' and opPerson!='' ">
+                AND operation_person LIKE concat('%',#{opPerson},'%')
+            </if>
+            <if test="opType!='undefined' and opType!='' ">
+                AND operation_type LIKE concat('%',#{opType},'%')
+            </if>
+            <if test="opModule!='undefined' and opModule!='' ">
+                AND operation_module LIKE concat('%',#{opModule},'%')
+            </if>
+            <if test="opCategory!='undefined' and opCategory!='' ">
+                AND operation_category LIKE concat('%',#{opCategory},'%')
+            </if>
+            <if test="opSystemModule!='undefined' and opSystemModule!='' ">
+                AND operation_system_module LIKE concat('%',#{opSystemModule},'%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 得到日志记录配置子模块-->
+    <select id="getRecordModule" resultType="String">
+        SELECT record_module FROM cms_oplog_record
+        <where>
+            <if test="recordCategory !='undefined' and recordCategory !='' ">
+                record_category = #{recordCategory}
+            </if>
+            <if test="recordSystemModule !='undefined' and recordSystemModule !='' ">
+                AND record_system_module = #{recordSystemModule}
+            </if>
+        </where>
+    </select>
+    <!-- 得到日志记录配置子系统模块-->
+    <select id="getRecordSystemModule" resultType="String">
+        SELECT DISTINCT record_system_module FROM cms_oplog_record
+        <where>
+            <if test="recordCategory !='undefined' and recordCategory !='' ">
+                record_category = #{recordCategory}
+            </if>
+        </where>
+    </select>
+    <!-- 根据编号得到日志记录配置系统子模块-->
+    <select id="getRecordModuleById" resultType="String" parameterType="String">
+        SELECT record_module FROM cms_oplog_record WHERE record_id=#{recordId}
+    </select>
+    <!-- 得到日志记录配置状态返回给前端渲染-->
+    <select id="getRecordStatus" resultMap="recordLogResultMap" parameterType="String">
+        SELECT record_id, record_status FROM cms_oplog_record WHERE record_module=#{recordModule}
+    </select>
+    <!-- 得到日志记录配置状态用于判断是否记录到日志-->
+    <select id="getStatusByModule" resultMap="recordLogResultMap" parameterType="String">
+        SELECT * FROM cms_oplog_record WHERE record_module=#{recordModule}
+    </select>
+    <!-- 通过子系统模块查询-->
+    <select id="getRecordModuleBySysModule" resultMap="recordLogResultMap" parameterType="String">
+        SELECT * FROM cms_oplog_record WHERE record_system_module=#{reSysModule}
+    </select>
+    <!-- 修改子系统模块记录状态-->
+    <update id="upRecordStatus" parameterType="String">
+        UPDATE cms_oplog_record SET record_status=1 WHERE record_id=#{recordId}
+    </update>
+    <!-- 重置记录状态 -->
+    <update id="reSetRecordStatus" parameterType="String">
+        UPDATE cms_oplog_record SET record_status=0 WHERE record_module=#{recordModule}
+    </update>
+    <!-- checkModule-->
+    <select id="checkModule" resultType="int">
+        SELECT record_id FROM cms_oplog_record WHERE record_status=1
+    </select>
+    <resultMap id="opLogResultMap" type="com.xlauncher.entity.OperationLog">
+        <id property="id" column="id"/>
+        <result property="operationPerson" column="operation_person"/>
+        <result property="operationTime" column="operation_time"/>
+        <result property="operationType" column="operation_type"/>
+        <result property="operationModule" column="operation_module"/>
+        <result property="operationDescription" column="operation_description"/>
+        <result property="operationCategory" column="operation_category"/>
+        <result property="operationSystemModule" column="operation_system_module"/>
+    </resultMap>
+
+    <resultMap id="recordLogResultMap" type="com.xlauncher.entity.RecordLog">
+        <id property="recordId" column="record_id"/>
+        <result property="recordCategory" column="record_category"/>
+        <result property="recordSystemModule" column="record_system_module"/>
+        <result property="recordModule" column="record_module"/>
+        <result property="recordStatus" column="record_status"/>
+    </resultMap>
+</mapper>

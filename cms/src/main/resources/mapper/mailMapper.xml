@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.MailDao">
+    <insert id="insertMailS" parameterType="com.xlauncher.entity.MailS">
+        INSERT INTO cms_mail_sender(mail_sender, mail_receiver, mail_info_id, mail_status ,mail_title, mail_create_time) VALUES (#{mailSender},#{mailReceiver},#{mailInfoId},#{mailStatus},#{mailTitle},#{mailCreateTime})
+    </insert>
+    <insert id="insertMailR" parameterType="com.xlauncher.entity.MailR">
+        INSERT INTO cms_mail_receiver(mail_sender, mail_receiver, mail_receivers,mail_info_id, mail_status ,mail_title, mail_create_time) VALUES (#{mailSender},#{mailReceiver},#{mailReceivers},#{mailInfoId},#{mailStatus},#{mailTitle},#{mailCreateTime})
+    </insert>
+    <delete id="deleteMailS" parameterType="int">
+        DELETE FROM cms_mail_sender WHERE mail_id = #{mailId}
+    </delete>
+    <delete id="deleteMailR" parameterType="int">
+        DELETE FROM cms_mail_receiver WHERE mail_id = #{mailId}
+    </delete>
+    <select id="queryMailS" parameterType="int" resultMap="MailSResultMap">
+        SELECT * FROM cms_mail_sender WHERE mail_id=#{mailId};
+    </select>
+    <select id="queryMailR" parameterType="int" resultMap="MailRResultMap">
+        SELECT * FROM cms_mail_receiver WHERE mail_id=#{mailId};
+    </select>
+    <update id="updateMail" parameterType="int">
+        UPDATE cms_mail_receiver SET mail_status = 1 WHERE mail_id =#{mailId};
+    </update>
+    <select id="queryMailSList" resultMap="MailSResultMap">
+        SELECT * FROM cms_mail_sender WHERE mail_sender=#{mailSender} ORDER BY mail_create_time desc limit #{page},10
+    </select>
+    <select id="queryMailRList" resultMap="MailRResultMap">
+        SELECT * FROM cms_mail_receiver WHERE mail_receiver=#{mailReceiver} ORDER BY mail_create_time desc limit #{page},10
+    </select>
+    <select id="countMailS" resultType="int">
+        SELECT count(*) FROM cms_mail_sender WHERE mail_sender=#{mailSender}
+    </select>
+    <select id="countMailR" resultType="int">
+        SELECT count(*) FROM cms_mail_receiver WHERE mail_receiver=#{mailReceiver}
+    </select>
+    <select id="unread" resultType="int">
+        SELECT count(*) FROM cms_mail_receiver WHERE mail_receiver=#{mailReceiver} AND mail_status=-1
+    </select>
+    <select id="overview" resultMap="MailRResultMap">
+        SELECT * from cms_mail_receiver WHERE mail_receiver = #{mailReceiver} AND mail_status=-1 ORDER BY mail_create_time DESC limit 0,4
+    </select>
+
+    <resultMap id="MailSResultMap" type="com.xlauncher.entity.MailS">
+        <id column="mail_id" property="mailId"/>
+        <result column="mail_sender" property="mailSender"/>
+        <result column="mail_receiver" property="mailReceiver"/>
+        <result column="mail_info_id" property="mailInfoId"/>
+        <result column="mail_title" property="mailTitle"/>
+        <result column="mail_status" property="mailStatus"/>
+        <result column="mail_create_time" property="mailCreateTime"/>
+    </resultMap>
+    <resultMap id="MailRResultMap" type="com.xlauncher.entity.MailR">
+        <id column="mail_id" property="mailId"/>
+        <result column="mail_sender" property="mailSender"/>
+        <result column="mail_receiver" property="mailReceiver"/>
+        <result column="mail_receivers" property="mailReceivers"/>
+        <result column="mail_info_id" property="mailInfoId"/>
+        <result column="mail_title" property="mailTitle"/>
+        <result column="mail_status" property="mailStatus"/>
+        <result column="mail_create_time" property="mailCreateTime"/>
+    </resultMap>
+</mapper>
