@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.dimdao.IChannelDao">
+    <!--查询所有通道信息-->
+    <select id="queryAllChannel" resultMap="channelResultMap">
+        SELECT * FROM dim_channel
+    </select>
+
+    <!--查询所有通道信息-->
+    <select id="queryAllChannelIn" resultMap="channelResultMap">
+        SELECT * FROM dim_channel WHERE channel_status="在用"
+    </select>
+
+
+    <!--查询某个通道的具体信息-->
+    <select id="queryChannelMsg" resultMap="channelResultMap" parameterType="String">
+        SELECT * FROM dim_channel WHERE channel_id=#{channelId}
+    </select>
+
+    <!--查询某个通道的设备相关信息-->
+    <select id="queryChannelMsgWithDevice" resultMap="channelResultMap" parameterType="String">
+        SELECT * FROM dim_channel AS c LEFT JOIN  dim_device d on c.channel_source_id=d.device_id WHERE channel_id=#{channelId}
+    </select>
+
+    <select id="queryChannelThread" resultType="Integer" parameterType="String">
+        SELECT dim_channel.channel_thread_id FROM dim_channel WHERE channel_id=#{channelId}
+    </select>
+
+    <select id="queryChannelBySourceId" resultMap="channelResultMap" parameterType="String">
+        SELECT * FROM dim_channel WHERE channel_source_id=#{channelSourceID}
+    </select>
+
+    <!--增加一条通道信息-->
+    <insert id="insertChannel" parameterType="com.xlauncher.entity.Channel">
+        insert into dim_channel(channel_id, channel_name, channel_source_id, channel_number, channel_grid_id
+        , channel_location, channel_longitude, channel_latitude, channel_handler, channel_handler_phone, channel_create_time, channel_model, channel_vendor, channel_thread_id)
+        VALUES (#{channelId},#{channelName},#{channelSourceId},#{channelNumber},#{channelGridId},#{channelLocation}
+        ,#{channelLongitude},#{channelLatitude},#{channelHandler},#{channelHandlerPhone},#{channelCreateTime},#{channelModel},#{channelVendor},#{channelThreadId})
+    </insert>
+
+    <!-- 更新线程ID-->
+    <update id="updateChannelThreadId" parameterType="com.xlauncher.entity.Channel">
+        UPDATE dim_channel SET channel_thread_id=#{channelThreadId} WHERE channel_id=#{channelId}
+    </update>
+
+    <!--修改一条通道信息-->
+    <update id="updateChannelMsg" parameterType="com.xlauncher.entity.Channel">
+        UPDATE dim_channel
+        <set>
+            <if test="channelName != null and channelName != ''">
+                channel_name=#{channelName},
+            </if>
+            <if test="channelSourceId != null and channelSourceId != ''">
+                channel_source_id=#{channelSourceId},
+            </if>
+            <if test="channelNumber != null and channelNumber != ''">
+                channel_number=#{channelNumber},
+            </if>
+            <if test="channelGridId != null and channelGridId != ''">
+                channel_grid_id=#{channelGridId},
+            </if>
+            <if test="channelLocation != null and channelLocation != ''">
+                channel_location=#{channelLocation},
+            </if>
+            <if test="channelLongitude != null and channelLongitude != ''">
+                channel_longitude=#{channelLongitude},
+            </if>
+            <if test="channelLatitude != null and channelLatitude != ''">
+                channel_latitude=#{channelLatitude},
+            </if>
+            <if test="channelHandler != null and channelHandler != ''">
+                channel_handler=#{channelHandler},
+            </if>
+            <if test="channelHandlerPhone != null and channelHandlerPhone != ''">
+                channel_handler_phone=#{channelHandlerPhone},
+            </if>
+            <if test="channelUpdateTime != null and channelUpdateTime != ''">
+                channel_update_time=#{channelUpdateTime},
+            </if>
+            <if test="channelVendor != null and channelVendor != ''">
+                channel_vendor=#{channelVendor},
+            </if>
+            <if test="channelModel != null and channelModel != ''">
+                channel_model=#{channelModel},
+            </if>
+            <if test="channelThreadId != null and channelThreadId != ''">
+                channel_thread_id=#{channelThreadId},
+            </if>
+            <if test="channelPodStatus!=null and channelPodStatus!=''">
+                channel_pod_status=#{channelPodStatus}
+            </if>
+        </set>
+        WHERE channel_id=#{channelId}
+    </update>
+
+    <!--反馈设备故障状态-->
+    <update id="updateChannelFault" parameterType="com.xlauncher.entity.Channel">
+        update dim_channel set channel_fault_code=#{channelFaultCode}, channel_fault=#{channelFault}, channel_fault_time=#{channelFaultTime} , channel_pod_status=#{channelPodStatus} where channel_id=#{channelId}
+    </update>
+    <!--删除一条通道信息-->
+    <delete id="deleteChannel" parameterType="String">
+        DELETE FROM dim_channel WHERE channel_id=#{channelId}
+    </delete>
+
+    <!--激活通道activeDevice-->
+    <update id="activeChannel">
+        UPDATE dim_channel SET channel_status = "在用" , channel_thread_id=#{threadId} where channel_id=#{channelId}
+    </update>
+    <!--停用通道activeDevice-->
+    <update id="disableChannel" parameterType="String">
+        UPDATE dim_channel SET channel_status = "停用" , channel_thread_id= 0 where channel_id=#{channelId}
+    </update>
+    <!--激活设备以及对应通道activeDeviceChannel-->
+    <update id="activeDeviceChannel" parameterType="String">
+        UPDATE dim_channel SET channel_status = "在用" where channel_source_id=#{deviceId}
+    </update>
+    <!--停用设备以及对应通道disableDeviceChannel-->
+    <update id="disableDeviceChannel" parameterType="String">
+        UPDATE dim_channel SET channel_status = "停用" where channel_source_id=#{deviceId}
+    </update>
+
+    <resultMap id="channelResultMap" type="com.xlauncher.entity.Channel">
+        <id property="id" column="id"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="channelSourceId" column="channel_source_id"/>
+        <result property="channelNumber" column="channel_number"/>
+        <result property="channelGridId" column="channel_grid_id"/>
+        <result property="channelLocation" column="channel_location"/>
+        <result property="channelLongitude" column="channel_longitude"/>
+        <result property="channelLatitude" column="channel_latitude"/>
+        <result property="channelHandler" column="channel_handler"/>
+        <result property="channelHandlerPhone" column="channel_handler_phone"/>
+        <result property="channelPodStatus" column="channel_pod_status"/>
+        <result property="channelStatus" column="channel_status"/>
+        <result property="channelCreateTime" column="channel_create_time"/>
+        <result property="channelUpdateTime" column="channel_update_time"/>
+        <result property="channelFaultTime" column="channel_fault_time"/>
+        <result property="channelFaultCode" column="channel_fault_code"/>
+        <result property="channelFault" column="channel_fault"/>
+        <result property="channelModel" column="channel_model"/>
+        <result property="channelVendor" column="channel_vendor"/>
+        <result property="channelThreadId" column="channel_thread_id"/>
+
+        <!--多表联查 其中column对应外键-->
+        <association property="device" javaType="com.xlauncher.entity.Device" column="device_id">
+            <result property="deviceId" column="device_id"/>
+            <result property="deviceIp" column="device_ip"/>
+            <result property="devicePort" column="device_port"/>
+            <result property="deviceUserName" column="device_user_name"/>
+            <result property="deviceUserPassword" column="device_user_password"/>
+        </association>
+    </resultMap>
+</mapper>

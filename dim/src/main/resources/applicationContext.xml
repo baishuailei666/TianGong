@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+		http://www.springframework.org/schema/util
+		http://www.springframework.org/schema/util/spring-util-4.3.xsd http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+    <!--配置jdbc配置文件-->
+    <util:properties location="classpath:mysql.properties" id="jdbc"/>
+
+    <!--开启spring包扫描-->
+    <context:annotation-config/>
+    <context:component-scan base-package="com.xlauncher"/>
+    <!-- spring调用配置文件-->
+    <context:property-placeholder location="classpath*:service.properties"/>
+
+    <!--托管数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="#{jdbc.url}"/>
+        <property name="username" value="#{jdbc.username}"/>
+        <property name="password" value="#{jdbc.password}"/>
+        <property name="driverClassName" value="#{jdbc.driver}"/>
+        <property name="initialSize" value="#{jdbc.initialSize}"/>
+        <property name="maxActive" value="#{jdbc.maxActive}"/>
+    </bean>
+
+
+    <!--托管SqlsessionFactoryBean-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+
+        <!--指定数据源-->
+        <property name="dataSource" ref="dataSource"/>
+
+        <!--自动给实体类取别名-->
+        <property name="typeAliasesPackage" value="com.xlauncher.entity"/>
+
+        <!--配置映射文件地址-->
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:com/xlauncher/mapper/*.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--配置dao扫描-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+
+        <!--配置接口位置-->
+        <property name="basePackage" value="com.xlauncher.dao"/>
+    </bean>
+
+    <!--托管事务管理器-->
+    <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--开启事务管理-->
+    <tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>
+
+
+
+    <!-- 引入外部properties文件 -->
+    <context:property-placeholder location="classpath:service.properties" />
+    <!-- 连接配置rabbit的连接工厂 -->
+    <rabbit:connection-factory id="connectionFactory"
+                               host="${mqIp}"
+                               port="${mqPort}"
+                               username="${mqUserName}"
+                               password="${mqPassword}" />
+
+    <!-- 设置Ack模式为手动 -->
+    <bean id="ackManual" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+        <property name="staticField" value="org.springframework.amqp.core.AcknowledgeMode.MANUAL" />
+    </bean>
+
+    <!-- 创建rabbitAdmin 代理类 定义rabbit template用于数据的接收和发送 -->
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory"/>
+
+    <!--申明一个消息队列Queue   durable:是否持久化   exclusive: 仅创建者可以使用的私有队列，断开后自动删除
+        auto_delete: 当所有消费客户端连接断开后，是否自动删除队列-->
+    <rabbit:queue id="mqQueue" name="${mqQueue_img},${mqQueue_channel}" durable="true"
+                  auto-delete="false" exclusive="false" />
+
+
+</beans>

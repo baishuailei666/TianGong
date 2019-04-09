@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="tiangong_dim@localhost">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="4.4">
+    <root id="1"/>
+    <schema id="2" parent="1" name="tiangong_dim">
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </schema>
+    <schema id="3" parent="1" name="cms"/>
+    <schema id="4" parent="1" name="es"/>
+    <schema id="5" parent="1" name="hibernate"/>
+    <schema id="6" parent="1" name="information_schema"/>
+    <schema id="7" parent="1" name="mysql"/>
+    <schema id="8" parent="1" name="performance_schema"/>
+    <schema id="9" parent="1" name="sms"/>
+    <schema id="10" parent="1" name="springboot"/>
+    <schema id="11" parent="1" name="tiangong_cms"/>
+    <schema id="12" parent="1" name="tiangong_draft"/>
+    <table id="13" parent="2" name="dim_channel"/>
+    <table id="14" parent="2" name="dim_device"/>
+    <column id="15" parent="13" name="id">
+      <Position>1</Position>
+      <Comment>主键id，自动递增，数据库维护</Comment>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="16" parent="13" name="channel_id">
+      <Position>2</Position>
+      <Comment>真实通道编号 UUID，32位唯一标识，关键字</Comment>
+      <DataType>varchar(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="17" parent="13" name="channel_name">
+      <Position>3</Position>
+      <Comment>真实通道名称</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="18" parent="13" name="channel_source_id">
+      <Position>4</Position>
+      <Comment>真实通道资源编号，UUID通道所属设备编号（外键），真实设备表中的device_id</Comment>
+      <DataType>varchar(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="19" parent="13" name="channel_number">
+      <Position>5</Position>
+      <Comment>真实设备取流使用的通道序号</Comment>
+      <DataType>int(10)|0</DataType>
+    </column>
+    <column id="20" parent="13" name="channel_grid_id">
+      <Position>6</Position>
+      <Comment>网格编号</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="21" parent="13" name="channel_location">
+      <Position>7</Position>
+      <Comment>真实通道行政地理位置信息</Comment>
+      <DataType>varchar(51)|0</DataType>
+    </column>
+    <column id="22" parent="13" name="channel_longitude">
+      <Position>8</Position>
+      <Comment>GIS信息经度，具体标准可调整</Comment>
+      <DataType>varchar(50)|0</DataType>
+    </column>
+    <column id="23" parent="13" name="channel_latitude">
+      <Position>9</Position>
+      <Comment>GIS信息维度，具体标准可调整</Comment>
+      <DataType>varchar(50)|0</DataType>
+    </column>
+    <column id="24" parent="13" name="channel_handler">
+      <Position>10</Position>
+      <Comment>真实通道负责人</Comment>
+      <DataType>varchar(52)|0</DataType>
+    </column>
+    <column id="25" parent="13" name="channel_handler_phone">
+      <Position>11</Position>
+      <Comment>真实通道负责人联系电话</Comment>
+      <DataType>varchar(53)|0</DataType>
+    </column>
+    <column id="26" parent="13" name="channel_pod_status">
+      <Position>12</Position>
+      <Comment>默认为：0；链接状态：1；不可达：0</Comment>
+      <DataType>int(10)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="27" parent="13" name="channel_status">
+      <Position>13</Position>
+      <Comment>真实通道使用状态：在用，停用，删除</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;在用&apos;</DefaultExpression>
+    </column>
+    <column id="28" parent="13" name="channel_create_time">
+      <Position>14</Position>
+      <Comment>真实通道添加时间：yyyy-MM-dd HH:mm:ss</Comment>
+      <DataType>datetime|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="29" parent="13" name="channel_update_time">
+      <Position>15</Position>
+      <Comment>真实通道更新时间：yyyy-MM-dd HH:mm:ss</Comment>
+      <DataType>datetime|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;1970-01-01 00:00:00&apos;</DefaultExpression>
+    </column>
+    <column id="30" parent="13" name="channel_fault_time">
+      <Position>16</Position>
+      <Comment>通道故障产生时间</Comment>
+      <DataType>datetime|0</DataType>
+    </column>
+    <column id="31" parent="13" name="channel_fault_code">
+      <Position>17</Position>
+      <Comment>真实通道故障编码</Comment>
+      <DataType>int(10)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="32" parent="13" name="channel_fault">
+      <Position>18</Position>
+      <Comment>真实通道故障信息</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <DefaultExpression>&apos;正常运行&apos;</DefaultExpression>
+    </column>
+    <column id="33" parent="13" name="channel_model">
+      <Position>19</Position>
+      <Comment>通道型号</Comment>
+      <DataType>varchar(20)|0</DataType>
+    </column>
+    <column id="34" parent="13" name="channel_vendor">
+      <Position>20</Position>
+      <Comment>通道厂商</Comment>
+      <DataType>varchar(50)|0</DataType>
+    </column>
+    <column id="35" parent="13" name="channel_thread_id">
+      <Position>21</Position>
+      <DataType>int(11)|0</DataType>
+      <DefaultExpression>&apos;-1&apos;</DefaultExpression>
+    </column>
+    <key id="36" parent="13" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <column id="37" parent="14" name="id">
+      <Position>1</Position>
+      <Comment>主键，自动递增，数据库维护</Comment>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="38" parent="14" name="device_id">
+      <Position>2</Position>
+      <Comment>真实设备编号，UUID随机生成32位字符唯一标识</Comment>
+      <DataType>varchar(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="39" parent="14" name="device_name">
+      <Position>3</Position>
+      <Comment>真实设备备注名称</Comment>
+      <DataType>varchar(50)|0</DataType>
+    </column>
+    <column id="40" parent="14" name="device_ip">
+      <Position>4</Position>
+      <Comment>真实设备ip地址</Comment>
+      <DataType>varchar(20)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="41" parent="14" name="device_port">
+      <Position>5</Position>
+      <Comment>真实设备port端口</Comment>
+      <DataType>varchar(20)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="42" parent="14" name="device_user_name">
+      <Position>6</Position>
+      <Comment>真实设备登录用户名</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="43" parent="14" name="device_user_password">
+      <Position>7</Position>
+      <Comment>真实设备登录密码</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="44" parent="14" name="device_type">
+      <Position>8</Position>
+      <Comment>真实设备类型</Comment>
+      <DataType>varchar(50)|0</DataType>
+    </column>
+    <column id="45" parent="14" name="device_model">
+      <Position>9</Position>
+      <Comment>真实设备型号</Comment>
+      <DataType>varchar(20)|0</DataType>
+    </column>
+    <column id="46" parent="14" name="device_vendor">
+      <Position>10</Position>
+      <Comment>设备厂商</Comment>
+      <DataType>varchar(50)|0</DataType>
+    </column>
+    <column id="47" parent="14" name="device_fault_code">
+      <Position>11</Position>
+      <Comment>真实设备故障编号，1表示正常运行，2,3,4等表示各设备故障信息</Comment>
+      <DataType>int(10)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="48" parent="14" name="device_fault">
+      <Position>12</Position>
+      <Comment>真实设备故障信息</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <DefaultExpression>&apos;正常运行&apos;</DefaultExpression>
+    </column>
+    <column id="49" parent="14" name="device_fault_time">
+      <Position>13</Position>
+      <Comment>真实设备故障产生时间</Comment>
+      <DataType>datetime|0</DataType>
+    </column>
+    <column id="50" parent="14" name="device_channel_count">
+      <Position>14</Position>
+      <Comment>真实设备支持的通道总数</Comment>
+      <DataType>int(10)|0</DataType>
+    </column>
+    <column id="51" parent="14" name="device_status">
+      <Position>15</Position>
+      <Comment>真实设备使用状态，（1在用，0停用，-1删除）</Comment>
+      <DataType>varchar(50)|0</DataType>
+      <DefaultExpression>&apos;在用&apos;</DefaultExpression>
+    </column>
+    <column id="52" parent="14" name="device_org_id">
+      <Position>16</Position>
+      <Comment>真实设备所属组织编号</Comment>
+      <DataType>varchar(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="53" parent="14" name="device_division_id">
+      <Position>17</Position>
+      <Comment>真实设备所属行政区划编号</Comment>
+      <DataType>bigint(20)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="54" parent="14" name="device_create_time">
+      <Position>18</Position>
+      <Comment>真实设备添加时间，yyyy-MM-dd HH:mm:ss</Comment>
+      <DataType>datetime|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="55" parent="14" name="device_update_time">
+      <Position>19</Position>
+      <Comment>真实设备更新时间，yyyy-MM-dd HH:mm:ss</Comment>
+      <DataType>datetime|0</DataType>
+    </column>
+    <key id="56" parent="14" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+  </database-model>
+</dataSource>

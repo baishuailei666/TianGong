@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="myskprj:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="dim.war">
+      <element id="artifact" artifact-name="myskprj:war exploded" />
+    </root>
+  </artifact>
+</component>

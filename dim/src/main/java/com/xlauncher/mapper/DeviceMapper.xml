@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xlauncher.dao.dimdao.IDeviceDao">
+    <!--查询所有设备信息-->
+    <select id="queryAllDevice" resultMap="deviceResultMap">
+        SELECT * FROM dim_device
+    </select>
+
+    <!--查询某台设备详细信息-->
+    <select id="queryDeviceMsg" parameterType="String" resultMap="deviceResultMap">
+        SELECT * FROM dim_device WHERE device_id=#{deviceId}
+    </select>
+
+    <!--查询Device下所有通道的标号-->
+    <select id="queryAllInSameDevice" parameterType="String" resultType="String">
+        SELECT channel_id FROM dim_channel WHERE channel_source_id=#{deviceId}
+    </select>
+
+    <!--新增一台设备-->
+    <insert id="insertDevice" parameterType="com.xlauncher.entity.Device">
+        insert into dim_device(device_id,device_name,device_ip,device_port,device_user_name
+        ,device_user_password,device_type,device_model, device_vendor
+        ,device_channel_count,device_org_id,device_division_id,device_create_time)
+        values (#{deviceId},#{deviceName},#{deviceIp},#{devicePort},#{deviceUserName},
+        #{deviceUserPassword},#{deviceType},#{deviceModel},#{deviceVendor}
+        ,#{deviceChannelCount},#{deviceOrgId},#{deviceDivisionId},#{deviceCreateTime})
+    </insert>
+
+    <!--修改一台设备信息-->
+    <update id="updateDeviceMsg" parameterType="com.xlauncher.entity.Device">
+        UPDATE dim_device
+        <set>
+            <if test="deviceName !=null and deviceName!=''">
+                device_name=#{deviceName},
+            </if>
+            <if test="deviceIp !=null and deviceIp!=''">
+                device_ip=#{deviceIp},
+            </if>
+            <if test="devicePort !=null and devicePort!=''">
+                device_port=#{devicePort},
+            </if>
+            <if test="deviceUserName !=null and deviceUserName!=''">
+                device_user_name=#{deviceUserName},
+            </if>
+            <if test="deviceUserPassword !=null and deviceUserPassword!=''">
+                device_user_password=#{deviceUserPassword},
+            </if>
+            <if test="deviceType !=null and deviceType!=''">
+                device_type=#{deviceType},
+            </if>
+            <if test="deviceModel !=null and deviceModel !=''">
+                device_model=#{deviceModel},
+            </if>
+            <if test="deviceVendor !=null and deviceVendor !=''">
+                device_vendor=#{deviceVendor},
+            </if>
+            <if test="deviceChannelCount !=null and deviceChannelCount!=''">
+                device_channel_count=#{deviceChannelCount},
+            </if>
+            <if test="deviceOrgId !=null and deviceOrgId!='' ">
+                device_org_id=#{deviceOrgId},
+            </if>
+            <if test="deviceDivisionId != null and deviceDivisionId!='' ">
+                device_division_id=#{deviceDivisionId},
+            </if>
+            <if test="deviceUpdateTime != null and deviceUpdateTime !='' ">
+                device_update_time=#{deviceUpdateTime}
+            </if>
+        </set>
+        WHERE device_id=#{deviceId}
+    </update>
+    <!-- DIM反馈设备运行状态updateRuntimeDevice -->
+    <update id="updateRuntimeDevice" parameterType="com.xlauncher.entity.Device">
+        update dim_device set device_fault_code=#{deviceFaultCode}, device_fault=#{deviceFault}, device_fault_time=#{deviceFaultTime} WHERE device_id=#{deviceId}
+    </update>
+    <!--删除一台设备-->
+    <delete id="deleteDevice" parameterType="String">
+        DELETE FROM dim_device WHERE device_id=#{deviceId}
+    </delete>
+    <!--激活设备activeDevice-->
+    <update id="activeDevice" parameterType="String">
+        UPDATE dim_device SET dim_device.device_status = "在用" where dim_device.device_id=#{deviceId}
+    </update>
+    <!--停用设备activeDevice-->
+    <update id="disableDevice" parameterType="String">
+        UPDATE dim_device SET dim_device.device_status = "停用" where dim_device.device_id=#{deviceId}
+    </update>
+    <resultMap id="deviceResultMap" type="com.xlauncher.entity.Device">
+        <id property="id" column="id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="deviceIp" column="device_ip"/>
+        <result property="devicePort" column="device_port"/>
+        <result property="deviceUserName" column="device_user_name"/>
+        <result property="deviceUserPassword" column="device_user_password"/>
+        <result property="deviceType" column="device_type"/>
+        <result property="deviceModel" column="device_model"/>
+        <result property="deviceVendor" column="device_vendor"/>
+        <result property="deviceFaultCode" column="device_fault_code"/>
+        <result property="deviceFault" column="device_fault"/>
+        <result property="deviceChannelCount" column="device_channel_count"/>
+        <result property="deviceStatus" column="device_status"/>
+        <result property="deviceOrgId" column="device_org_id"/>
+        <result property="deviceDivisionId" column="device_division_id"/>
+        <result property="deviceCreateTime" column="device_create_time"/>
+        <result property="deviceUpdateTime" column="device_update_time"/>
+        <result property="deviceFaultTime" column="device_fault_time"/>
+    </resultMap>
+</mapper>
